@@ -115,7 +115,21 @@ void draw_image(spi_device_handle_t spi, const Image *my_image) {
     send_data(spi, row_data, 4);
 
     send_command(spi, CMD_SET_PIXEL);
-    send_data16b(spi, my_image->pixels, my_image->size_image);
+
+    // Создаем DMA буфер
+    uint16_t *dma_buffer = heap_caps_malloc(
+        my_image->size_image * sizeof(uint16_t),
+        MALLOC_CAP_DMA
+    );
+    // Проверяем доступность памяти
+    if (!dma_buffer) {
+        ESP_LOGE("DMA", "Не хватило памяти!");
+        return;
+    }
+    // Копируем данные из flash в RAM
+    memcpy(dma_buffer, my_image->pixels, my_image->size_image * sizeof(uint16_t));
+    send_data16b(spi, dma_buffer, my_image->size_image);
+    free(dma_buffer);
 }
 
 void fill_rect(spi_device_handle_t spi, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color) {
