@@ -27,8 +27,7 @@ void spi_init(spi_device_handle_t *spi) {
         .sclk_io_num = PIN_NUM_CLK,
         .quadwp_io_num = -1,
         .quadhd_io_num = -1,
-        .max_transfer_sz = 153600,
-//		.max_transfer_sz = 320*240*2,
+        .max_transfer_sz = 153600, //320*240*2
     };
     
     esp_err_t ret = spi_bus_initialize(HSPI_HOST, &buscfg, SPI_DMA_CHANNEL);
@@ -106,19 +105,6 @@ void reset_display(void) {
     vTaskDelay(50 / portTICK_PERIOD_MS);
 }
 
-//void draw_image(spi_device_handle_t spi, uint16_t x, uint16_t y, uint16_t width, uint16_t height, const uint16_t * color, size_t size_image) {
-//    send_command(spi, CMD_COLUMN);
-//    uint8_t col_data[4] = {0, x & 0xFF, 0, (x - 1 + width) & 0xFF};
-//    send_data(spi, col_data, 4);
-//
-//    send_command(spi, CMD_ROW);
-//    uint8_t row_data[4] = {0, y & 0xFF, 0, (y - 1 + height) & 0xFF};
-//    send_data(spi, row_data, 4);
-//
-//    send_command(spi, CMD_SET_PIXEL);
-//    send_data16b(spi, color, size_image);
-//}
-
 void draw_image(spi_device_handle_t spi, Image *my_image) {
     send_command(spi, CMD_COLUMN);
     uint8_t col_data[4] = {0, my_image->x & 0xFF, 0, (my_image->x - 1 + my_image->width) & 0xFF};
@@ -144,7 +130,6 @@ void fill_rect(spi_device_handle_t spi, uint16_t x, uint16_t y, uint16_t width, 
     send_command(spi, CMD_SET_PIXEL);
 
     uint32_t buf_size = ((width + sizeof(uint32_t)) * (height + sizeof(uint32_t)) * 2);
-//    uint8_t *color_buf = heap_caps_malloc(buf_size, MALLOC_CAP_DMA);
     uint8_t *color_buf = heap_caps_malloc(buf_size, MALLOC_CAP_DMA | MALLOC_CAP_32BIT);
 
     for (int i = 0; i < (buf_size / 2) + sizeof(uint32_t); i++) {
@@ -221,7 +206,6 @@ void app_main(void)
     spi_device_handle_t spi;
 
     spi_init(&spi);
-    //pvPortMalloc(153600);
 
     const size_t data = 1;
     send_command(spi, CMD_SOFTWARE_RESET);
@@ -238,43 +222,49 @@ void app_main(void)
 
 //    fill_screen(spi, 0xAAAA);
 
-//    fill_rect(spi, 0, 0, 32, 40, 0x0000);
-//    fill_rect(spi, 0, 40, 32, 40, 0x1111);
-//    fill_rect(spi, 0, 80, 32, 40, 0x2222);
-//    fill_rect(spi, 0, 120, 32, 40, 0x3333);
-//    fill_rect(spi, 32, 0, 32, 40, 0x4444);
-//    fill_rect(spi, 32, 40, 32, 40, 0x5555);
-//    fill_rect(spi, 32, 80, 32, 40, 0x6666);
-//    fill_rect(spi, 32, 120, 32, 40, 0x7777);
-//    fill_rect(spi, 64, 0, 32, 40, 0x8888);
-//    fill_rect(spi, 64, 40, 32, 40, 0x9999);
-//    fill_rect(spi, 64, 80, 32, 40, 0xAAAA);
-//    fill_rect(spi, 64, 120, 32, 40, 0xBBBB);
-//    fill_rect(spi, 96, 0, 32, 40, 0xCCCC);
-//    fill_rect(spi, 96, 40, 32, 40, 0xDDDD);
-//    fill_rect(spi, 96, 80, 32, 40, 0xEEEE);
-//    fill_rect(spi, 96, 120, 32, 40, 0xFFFF);
+/*
+    Fill more rectangle
+*/
+/*
+    fill_rect(spi, 0, 0, 32, 40, 0x0000);
+    fill_rect(spi, 0, 40, 32, 40, 0x1111);
+    fill_rect(spi, 0, 80, 32, 40, 0x2222);
+    fill_rect(spi, 0, 120, 32, 40, 0x3333);
+    fill_rect(spi, 32, 0, 32, 40, 0x4444);
+    fill_rect(spi, 32, 40, 32, 40, 0x5555);
+    fill_rect(spi, 32, 80, 32, 40, 0x6666);
+    fill_rect(spi, 32, 120, 32, 40, 0x7777);
+    fill_rect(spi, 64, 0, 32, 40, 0x8888);
+    fill_rect(spi, 64, 40, 32, 40, 0x9999);
+    fill_rect(spi, 64, 80, 32, 40, 0xAAAA);
+    fill_rect(spi, 64, 120, 32, 40, 0xBBBB);
+    fill_rect(spi, 96, 0, 32, 40, 0xCCCC);
+    fill_rect(spi, 96, 40, 32, 40, 0xDDDD);
+    fill_rect(spi, 96, 80, 32, 40, 0xEEEE);
+    fill_rect(spi, 96, 120, 32, 40, 0xFFFF);
+*/
 
-    //const uint16_t size_image = 32;
-    //uint8_t image[size_image];
-    //memset(image, 0x00, sizeof(uint8_t) * size_image);
-    //draw_image(spi, 0, 0, 4, 4, image, size_image);
-    //size_t size_image = 60*67*2;
-    //draw_image(spi, 128, 0, 60, 67, my_image, size_image);
     draw_image(spi, &my_image);
 
-//    uint16_t tfa = 0;
-//    uint16_t vsa = 320;
-//    uint16_t bfa = 0;
-//    uint16_t ssa = 0;
-//    uint16_t i = 1;
-//    while (1) {
-//        if (i == 320) { i = 1; }; i++;
-//        ssa = 0+i;
-//        vertical_scroll(spi, &tfa, &vsa, &bfa, &ssa);
-//        //fill_screen(spi, 0xCCCC+i);
-//        vTaskDelay(10 / portTICK_PERIOD_MS); // Задержка для видимости прокрутки
-//        printf("ok\n");
-//    }
+/*
+
+    Vertical Scrolling
+
+*/
+/*
+    uint16_t tfa = 0;
+    uint16_t vsa = 320;
+    uint16_t bfa = 0;
+    uint16_t ssa = 0;
+    uint16_t i = 1;
+    while (1) {
+        if (i == 320) { i = 1; }; i++;
+        ssa = 0+i;
+        vertical_scroll(spi, &tfa, &vsa, &bfa, &ssa);
+        //fill_screen(spi, 0xCCCC+i);
+        vTaskDelay(10 / portTICK_PERIOD_MS); // Задержка для видимости прокрутки
+        printf("ok\n");
+    }
+*/
 }
 
