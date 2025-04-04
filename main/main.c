@@ -107,7 +107,7 @@ void reset_display(void) {
 
 void draw_image(spi_device_handle_t spi, Image *my_image) {
     send_command(spi, CMD_COLUMN);
-    uint8_t col_data[4] = {0, my_image->x & 0xFF, 0, (my_image->x - 1 + my_image->width) & 0xFF};
+    uint8_t col_data[4] = {my_image->x >> 8, my_image->x & 0xFF, (my_image->x - 1 + my_image->width) >> 8, (my_image->x - 1 + my_image->width) & 0xFF};
     send_data(spi, col_data, 4);
 
     send_command(spi, CMD_ROW);
@@ -120,7 +120,7 @@ void draw_image(spi_device_handle_t spi, Image *my_image) {
 
 void fill_rect(spi_device_handle_t spi, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color) {
     send_command(spi, CMD_COLUMN);
-    uint8_t col_data[4] = {0, x & 0xFF, 0, (x + width) & 0xFF};
+    uint8_t col_data[4] = {x >> 8, x & 0xFF, (x + width) >> 8, (x + width) & 0xFF};
     send_data(spi, col_data, 4);
 
     send_command(spi, CMD_ROW);
