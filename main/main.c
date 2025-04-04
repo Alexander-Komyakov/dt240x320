@@ -105,7 +105,7 @@ void reset_display(void) {
     vTaskDelay(50 / portTICK_PERIOD_MS);
 }
 
-void draw_image(spi_device_handle_t spi, Image *my_image) {
+void draw_image(spi_device_handle_t spi, const Image *my_image) {
     send_command(spi, CMD_COLUMN);
     uint8_t col_data[4] = {my_image->x >> 8, my_image->x & 0xFF, (my_image->x - 1 + my_image->width) >> 8, (my_image->x - 1 + my_image->width) & 0xFF};
     send_data(spi, col_data, 4);
