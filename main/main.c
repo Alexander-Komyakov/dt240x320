@@ -236,7 +236,7 @@ void app_main(void)
     send_command(spi, CMD_MADCTL);
     send_data(spi, &madctl_value, 1);
 
-    fill_screen(spi, 0xAAAA);
+//    fill_screen(spi, 0xAAAA);
 
 //    fill_rect(spi, 0, 0, 32, 40, 0x0000);
 //    fill_rect(spi, 0, 40, 32, 40, 0x1111);
@@ -261,7 +261,7 @@ void app_main(void)
     //draw_image(spi, 0, 0, 4, 4, image, size_image);
     //size_t size_image = 60*67*2;
     //draw_image(spi, 128, 0, 60, 67, my_image, size_image);
-//    draw_image(spi, &my_image);
+    draw_image(spi, &my_image);
 
 //    uint16_t tfa = 0;
 //    uint16_t vsa = 320;
