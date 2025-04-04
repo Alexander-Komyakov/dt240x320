@@ -89,7 +89,7 @@ void send_data(spi_device_handle_t spi, const uint8_t *data, size_t length) {
 void send_data16b(spi_device_handle_t spi, const uint16_t *data, size_t length) {
     spi_transaction_t trans;
     memset(&trans, 0, sizeof(trans));
-    trans.length = length*8; // Длина в битах
+    trans.length = length*16; // Длина в битах
     trans.tx_buffer = data; // Указатель на данные для передачи
     gpio_set_level(PIN_NUM_DC, 1);
     esp_err_t ret = spi_device_transmit(spi, &trans);
