@@ -7,5 +7,11 @@ typedef struct {
     const uint16_t *pixels;
 } Image;
 
-extern const uint16_t my_image_pixels[320 * 240];
-extern const Image my_image;
+extern const uint16_t my_image_pixels_1[320 * 240];
+extern const Image my_image_1;
+
+extern const uint16_t my_image_pixels_2[320 * 240];
+extern const Image my_image_2;
+
+extern const uint16_t my_image_pixels_3[320 * 240];
+extern const Image my_image_3;

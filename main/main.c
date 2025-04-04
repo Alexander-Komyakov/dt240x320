@@ -258,7 +258,9 @@ void app_main(void)
     fill_rect(spi, 96, 120, 32, 40, 0xFFFF);
 */
 
-    draw_image(spi, &my_image);
+    draw_image(spi, &my_image_1);
+    draw_image(spi, &my_image_2);
+    draw_image(spi, &my_image_3);
 
 /*
 
