@@ -7,7 +7,7 @@ typedef struct {
     uint16_t width;
     uint16_t height;
     size_t size_image;
-    uint16_t color[76800];
+    uint16_t pixels[76800];
 } Image;
 
 const Image my_image = { 

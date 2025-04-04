@@ -115,7 +115,7 @@ void draw_image(spi_device_handle_t spi, const Image *my_image) {
     send_data(spi, row_data, 4);
 
     send_command(spi, CMD_SET_PIXEL);
-    send_data16b(spi, my_image->color, my_image->size_image);
+    send_data16b(spi, my_image->pixels, my_image->size_image);
 }
 
 void fill_rect(spi_device_handle_t spi, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color) {
@@ -130,16 +130,16 @@ void fill_rect(spi_device_handle_t spi, uint16_t x, uint16_t y, uint16_t width, 
     send_command(spi, CMD_SET_PIXEL);
 
     uint32_t buf_size = ((width + sizeof(uint32_t)) * (height + sizeof(uint32_t)) * 2);
-    uint8_t *color_buf = heap_caps_malloc(buf_size, MALLOC_CAP_DMA | MALLOC_CAP_32BIT);
+    uint8_t *pixel_buf = heap_caps_malloc(buf_size, MALLOC_CAP_DMA | MALLOC_CAP_32BIT);
 
     for (int i = 0; i < (buf_size / 2) + sizeof(uint32_t); i++) {
-        color_buf[i * 2] = color >> 8;   // Старший байт
-        color_buf[i * 2 + 1] = color & 0xFF; // Младший байт
+        pixel_buf[i * 2] = color >> 8;   // Старший байт
+        pixel_buf[i * 2 + 1] = color & 0xFF; // Младший байт
     }
 
-    send_data(spi, color_buf, buf_size);
+    send_data(spi, pixel_buf, buf_size);
 
-    free(color_buf);
+    free(pixel_buf);
 }
 
 
@@ -155,16 +155,16 @@ void fill_screen(spi_device_handle_t spi, uint16_t color) {
     send_command(spi, CMD_SET_PIXEL);
 
     uint32_t buf_size = 240 * 320 * 2; // 240x320 пикселей, 2 байта на пиксель
-    uint8_t *color_buf = heap_caps_malloc(buf_size, MALLOC_CAP_DMA);
+    uint8_t *pixel_buf = heap_caps_malloc(buf_size, MALLOC_CAP_DMA);
 
     for (int i = 0; i < 240 * 320; i++) {
-        color_buf[i * 2] = color >> 8;   // Старший байт
-        color_buf[i * 2 + 1] = color & 0xFF; // Младший байт
+        pixel_buf[i * 2] = color >> 8;   // Старший байт
+        pixel_buf[i * 2 + 1] = color & 0xFF; // Младший байт
     }
 
-    send_data(spi, color_buf, buf_size);
+    send_data(spi, pixel_buf, buf_size);
 
-    free(color_buf);
+    free(pixel_buf);
 }
 
 
@@ -179,8 +179,8 @@ void draw_pixel(spi_device_handle_t spi, uint16_t x, uint16_t y, uint16_t color)
     send_data(spi, row_data, 4);
 
     send_command(spi, CMD_SET_PIXEL);
-    uint8_t color_data[2] = {color >> 8, color & 0xFF}; // Цвет в формате RGB565
-    send_data(spi, color_data, 2);
+    uint8_t pixel_data[2] = {color >> 8, color & 0xFF}; // Цвет в формате RGB565
+    send_data(spi, pixel_data, 2);
 }
 
 
