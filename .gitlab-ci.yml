@@ -1,0 +1,4 @@
+include:
+  - project: esp32/ci-templates
+    ref: main
+    file: /$CI_PROJECT_NAME/${CI_PROJECT_NAME}.yml
