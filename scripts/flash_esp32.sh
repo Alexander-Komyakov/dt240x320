@@ -14,4 +14,4 @@ docker run --rm -it \
     esptool.py --chip esp32 --port /dev/ttyUSB0 --baud 460800 write_flash -z \
         0x1000 /opt/esp32-project/bootloader.bin \
         0x8000 /opt/esp32-project/partition-table.bin \
-        0x10000 /opt/esp32-project/dt240x320.bin
+        0x100000 /opt/esp32-project/dt240x320.bin
