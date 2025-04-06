@@ -7,7 +7,7 @@ project(dt240x320)
 
 # Настройки CPack
 set(CPACK_PACKAGE_CONTACT "Alexander Komyakov <sanya202018@gmail.com>")
-set(CPACK_PACKAGE_NAME "esp32-project")
+set(CPACK_PACKAGE_NAME "esp32-dt240x320")
 set(CPACK_PACKAGE_VERSION "${PACKAGE_VERSION}")
 set(CPACK_PACKAGE_DESCRIPTION "ESP32 firmware package")
 set(CPACK_PACKAGE_MAINTAINER "Alexander Komyakov <sanya202018@gmail.com>")
