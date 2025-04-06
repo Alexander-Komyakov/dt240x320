@@ -16,6 +16,15 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS "python3, esptool")
 set(CPACK_GENERATOR "DEB")
 set(CPACK_SET_DESTDIR ON)
 
+
+# Ищем esptool.py в системе
+find_program(ESPTOOL esptool.py PATHS /usr/bin /usr/local/bin REQUIRED)
+
+# Копируем в пакет
+install(FILES "${ESPTOOL}"
+        DESTINATION "/opt/esp32-tools"
+        PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ)
+
 # Установочные правила
 install(FILES 
     "${CMAKE_BINARY_DIR}/bootloader/bootloader.bin"
