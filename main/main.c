@@ -8,6 +8,11 @@
 #include "main.h"
 #include "image.c"
 #include "esp_rom_gpio.h"
+#include "freertos/stream_buffer.h"
+
+#define STREAM_BUF_SIZE 32
+StreamBufferHandle_t xStreamBuffer;
+
 
 void init_gpio_display() {
 	gpio_reset_pin( PIN_NUM_CS );
@@ -30,7 +35,7 @@ void button_task(void *pvParameter) {
     for ( ;; ) {
         for (int i = 0; i < num_pins; i++) {
             if (gpio_get_level(pins[i]) == 0) { // Если кнопка нажата (LOW, так как подтяжка к VCC)
-                printf("Клавиша нажата на пине: %d\n", pins[i]);
+                xStreamBufferSend(xStreamBuffer, &pins[i], sizeof(pins[i]), 0);
                 vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_DELAY_MS)); // Задержка для устранения дребезга
             }
         }
@@ -253,6 +258,8 @@ void vertical_scroll(spi_device_handle_t spi, uint16_t* tfa, uint16_t* vsa, uint
 
 void app_main(void)
 {
+    xStreamBuffer = xStreamBufferCreate(STREAM_BUF_SIZE, sizeof(int));
+
     init_gpio_display();
     reset_display();
     spi_device_handle_t spi;
@@ -300,19 +307,25 @@ void app_main(void)
     fill_rect(spi, 96, 120, 32, 40, 0xFFFF);
 */
 
+    int received = 0;
 	while (1)
 	{
-        fill_rect(spi, 96, 120, 32, 40, 0x0000);
+        xStreamBufferReceive(xStreamBuffer, &received, sizeof(received), 0);
+        //if(xStreamBufferReceive(xStreamBuffer, &received, sizeof(received), portMAX_DELAY) > 0)
+        //{
+        //    // Обработка числа
+        //}
+        fill_rect(spi, 96+received, 120, 32, 40, 0x0000);
     	draw_image(spi, &my_image_1);
-        fill_rect(spi, 96, 120, 32, 40, 0x0000);
+        fill_rect(spi, 96+received, 120, 32, 40, 0x0000);
     	draw_image(spi, &my_image_2);
-        fill_rect(spi, 96, 120, 32, 40, 0x0000);
+        fill_rect(spi, 96+received, 120, 32, 40, 0x0000);
     	draw_image(spi, &my_image_3);
-        fill_rect(spi, 96, 120, 32, 40, 0x0000);
+        fill_rect(spi, 96+received, 120, 32, 40, 0x0000);
     	draw_image(spi, &my_image_4);
-        fill_rect(spi, 96, 120, 32, 40, 0x0000);
+        fill_rect(spi, 96+received, 120, 32, 40, 0x0000);
     	draw_image(spi, &my_image_5);
-        fill_rect(spi, 96, 120, 32, 40, 0x0000);
+        fill_rect(spi, 96+received, 120, 32, 40, 0x0000);
 	}
 
 /*
