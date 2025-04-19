@@ -24,6 +24,12 @@
 #define CMD_SCRLAR 0x33         // Установка площади скрола
 #define CMD_VSCSAD 0x37         // Стартовый адрес вертикального скрола
 
+// Определяем пины для клавиш
+#define BUTTON_PINS {GPIO_NUM_13, GPIO_NUM_14, GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_19, GPIO_NUM_21, GPIO_NUM_22, GPIO_NUM_25, GPIO_NUM_32}
+
+// Задержка для устранения дребезга клавишь (в миллисекундах)
+#define DEBOUNCE_DELAY_MS 5
+
 void init_gpio_display();
 void spi_init(spi_device_handle_t *spi);
 void send_command(spi_device_handle_t spi, uint8_t cmd);

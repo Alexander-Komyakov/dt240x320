@@ -7,6 +7,7 @@
 #include "esp_log.h"
 #include "main.h"
 #include "image.c"
+#include "esp_rom_gpio.h"
 
 void init_gpio_display() {
 	gpio_reset_pin( PIN_NUM_CS );
@@ -14,10 +15,47 @@ void init_gpio_display() {
 	gpio_set_level( PIN_NUM_CS, 0 );
 
 	gpio_reset_pin( PIN_NUM_DC );
-	gpio_set_direction( PIN_NUM_DC, GPIO_MODE_OUTPUT ); gpio_set_level( PIN_NUM_DC, 0 );
+	gpio_set_direction( PIN_NUM_DC, GPIO_MODE_OUTPUT );
+    gpio_set_level( PIN_NUM_DC, 0 );
 
 	gpio_reset_pin( PIN_NUM_RST );
 	gpio_set_direction( PIN_NUM_RST, GPIO_MODE_OUTPUT );
+}
+
+// Задача нажатия кнопок
+void button_task(void *pvParameter) {
+    int pins[] = BUTTON_PINS;
+    int num_pins = 9; // 9 кнопок
+
+    for ( ;; ) {
+        for (int i = 0; i < num_pins; i++) {
+            if (gpio_get_level(pins[i]) == 0) { // Если кнопка нажата (LOW, так как подтяжка к VCC)
+                printf("Клавиша нажата на пине: %d\n", pins[i]);
+                vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_DELAY_MS)); // Задержка для устранения дребезга
+            }
+        }
+        vTaskDelay(pdMS_TO_TICKS(10)); // Небольшая задержка для снижения нагрузки на CPU
+    }
+}
+
+void init_gpio_button() {
+    // Настраиваем пины как входы с подтягивающими резисторами
+    gpio_config_t io_conf;
+    io_conf.intr_type = GPIO_INTR_DISABLE; // Отключаем прерывания
+    io_conf.mode = GPIO_MODE_INPUT;       // Режим ввода
+    io_conf.pin_bit_mask = 0;             // Очищаем маску
+
+    // Добавляем пины в маску
+    uint64_t button_pins = 0;
+    int pins[] = BUTTON_PINS;
+    for (int i = 0; i < sizeof(pins) / sizeof(pins[0]); i++) {
+        button_pins |= (1ULL << pins[i]);
+    }
+    io_conf.pin_bit_mask = button_pins;
+
+    io_conf.pull_up_en = GPIO_PULLUP_ENABLE; // Включаем подтягивающие резисторы
+    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    gpio_config(&io_conf);
 }
 
 void spi_init(spi_device_handle_t *spi) {
@@ -29,7 +67,7 @@ void spi_init(spi_device_handle_t *spi) {
         .quadhd_io_num = -1,
         .max_transfer_sz = 153600, //320*240*2
     };
-    
+
     esp_err_t ret = spi_bus_initialize(HSPI_HOST, &buscfg, SPI_DMA_CHANNEL);
     if (ret != ESP_OK) {
         ESP_LOGE("SPI", "Failed to initialize bus: %s", esp_err_to_name(ret));
@@ -234,6 +272,10 @@ void app_main(void)
     send_command(spi, CMD_MADCTL);
     send_data(spi, &madctl_value, 1);
 
+    init_gpio_button();
+    // Создаем задачу для обработки нажатий
+    xTaskCreate(button_task, "button_task", 2048, NULL, 1, NULL);
+
 //    fill_screen(spi, 0xAAAA);
 
 /*
@@ -260,11 +302,17 @@ void app_main(void)
 
 	while (1)
 	{
+        fill_rect(spi, 96, 120, 32, 40, 0x0000);
     	draw_image(spi, &my_image_1);
+        fill_rect(spi, 96, 120, 32, 40, 0x0000);
     	draw_image(spi, &my_image_2);
+        fill_rect(spi, 96, 120, 32, 40, 0x0000);
     	draw_image(spi, &my_image_3);
+        fill_rect(spi, 96, 120, 32, 40, 0x0000);
     	draw_image(spi, &my_image_4);
+        fill_rect(spi, 96, 120, 32, 40, 0x0000);
     	draw_image(spi, &my_image_5);
+        fill_rect(spi, 96, 120, 32, 40, 0x0000);
 	}
 
 /*
