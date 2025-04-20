@@ -276,7 +276,6 @@ void app_main(void)
     send_command(spi, CMD_DISPLAY_ON);
     send_command(spi, CMD_NORMAL_MODE);
 
-//    uint8_t madctl_value = 0x48;
     uint8_t madctl_value = 0x70;
     send_command(spi, CMD_MADCTL);
     send_data(spi, &madctl_value, 1);
@@ -285,30 +284,8 @@ void app_main(void)
     // Создаем задачу для обработки нажатий
     xTaskCreate(button_task, "button_task", 2048, NULL, 1, NULL);
 
-//    fill_screen(spi, 0xAAAA);
 
-/*
-    Fill more rectangle
-*/
-/*
-    fill_rect(spi, 0, 0, 32, 40, 0x0000);
-    fill_rect(spi, 0, 40, 32, 40, 0x1111);
-    fill_rect(spi, 0, 80, 32, 40, 0x2222);
-    fill_rect(spi, 0, 120, 32, 40, 0x3333);
-    fill_rect(spi, 32, 0, 32, 40, 0x4444);
-    fill_rect(spi, 32, 40, 32, 40, 0x5555);
-    fill_rect(spi, 32, 80, 32, 40, 0x6666);
-    fill_rect(spi, 32, 120, 32, 40, 0x7777);
-    fill_rect(spi, 64, 0, 32, 40, 0x8888);
-    fill_rect(spi, 64, 40, 32, 40, 0x9999);
-    fill_rect(spi, 64, 80, 32, 40, 0xAAAA);
-    fill_rect(spi, 64, 120, 32, 40, 0xBBBB);
-    fill_rect(spi, 96, 0, 32, 40, 0xCCCC);
-    fill_rect(spi, 96, 40, 32, 40, 0xDDDD);
-    fill_rect(spi, 96, 80, 32, 40, 0xEEEE);
-    fill_rect(spi, 96, 120, 32, 40, 0xFFFF);
-*/
-
+	// Передвижение персонажа(квадрата)
     int received = 0;
 	int x_pos = 96, y_pos = 120;
 
@@ -332,14 +309,6 @@ void app_main(void)
             if (received == GPIO_NUM_14) {
                 x_pos += 3;
             } 
-/*
-	        switch (received) {
-	            case GPIO_NUM_13: y_pos -= 3; break;  // Вверх
-	            case GPIO_NUM_25: y_pos += 3; break;  // Вниз
-	            case GPIO_NUM_21: x_pos -= 3; break;  // Влево
-	            case GPIO_NUM_14: x_pos += 3; break;  // Вправо
-	        }
-*/
 
 	        // Ограничиваем координаты
 	        x_pos = (x_pos < 0) ? 0 : (x_pos > DISPLAY_WIDTH - 32) ? DISPLAY_WIDTH - 32 : x_pos;
@@ -357,41 +326,8 @@ void app_main(void)
 	    vTaskDelay(10 / portTICK_PERIOD_MS);  // 10 (~100 FPS)
 	}
 
-//	while (1) {
-//	    if (xStreamBufferReceive(xStreamBuffer, &received, sizeof(received), 0) > 0) {
-//	        // Обработка нажатия кнопки
-//	        switch (received) {
-//	            case GPIO_NUM_13: // Вверх
-//	                y_pos -= 3;
-//	                break;
-//	            case GPIO_NUM_25: // Вниз
-//	                y_pos += 3;
-//	                break;
-//	            case GPIO_NUM_21: // Влево
-//	                x_pos -= 3;
-//	                break;
-//	            case GPIO_NUM_14: // Вправо
-//	                x_pos += 3;
-//	                break;
-//	            default:
-//	                break;
-//	        }
-
-	        // Ограничение координат
-//	        if (x_pos < 0) x_pos = 0;
-//	        if (x_pos > DISPLAY_WIDTH - 32) x_pos = DISPLAY_WIDTH - 32;
-//	        if (y_pos < 0) y_pos = 0;
-//	        if (y_pos > DISPLAY_HEIGHT - 40) y_pos = DISPLAY_HEIGHT - 40;
-
-	        // Отрисовка
-//	        fill_screen(spi, 0xFFFF); // Белый фон
-//	        fill_rect(spi, x_pos, y_pos, 32, 40, 0x0000); // Черный квадрат
-//	    }
-//	    vTaskDelay(10 / portTICK_PERIOD_MS);
-//	}
 
 /*
-
     Vertical Scrolling
 
 */
