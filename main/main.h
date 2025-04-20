@@ -1,4 +1,11 @@
+#include <stdio.h>
+#include <string.h>
 #include "driver/spi_master.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "driver/gpio.h"
+#include "driver/spi_master.h"
+#include "freertos/stream_buffer.h"
 
 #define PIN_NUM_MOSI 23
 #define PIN_NUM_CLK 18
@@ -23,23 +30,6 @@
 #define CMD_MADCTL 0x36         // Установка MADCTL
 #define CMD_SCRLAR 0x33         // Установка площади скрола
 #define CMD_VSCSAD 0x37         // Стартовый адрес вертикального скрола
-
-// Определяем пины для клавиш
-#define BUTTON_PINS {GPIO_NUM_13, GPIO_NUM_14, GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_19, GPIO_NUM_21, GPIO_NUM_22, GPIO_NUM_25, GPIO_NUM_32}
-
-// Задержка для устранения дребезга клавишь (в миллисекундах)
-#define DEBOUNCE_DELAY_MS 5
-
-// Назначение клавиш
-#define BUTTON_LEFT    GPIO_NUM_21
-#define BUTTON_RIGHT   GPIO_NUM_14
-#define BUTTON_UP      GPIO_NUM_13
-#define BUTTON_DOWN    GPIO_NUM_25
-#define BUTTON_RED     GPIO_NUM_17
-#define BUTTON_WHITE   GPIO_NUM_22
-#define BUTTON_YELLOW  GPIO_NUM_19
-#define BUTTON_BLUE    GPIO_NUM_16
-#define BUTTON_CENTER  GPIO_NUM_32
 
 void init_gpio_display();
 void spi_init(spi_device_handle_t *spi);

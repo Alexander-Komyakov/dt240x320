@@ -1,18 +1,7 @@
-#include <stdio.h>
-#include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "driver/gpio.h"
-#include "driver/spi_master.h"
-#include "esp_log.h"
 #include "main.h"
+#include "button.h"
 #include "image.c"
-#include "esp_rom_gpio.h"
-#include "freertos/stream_buffer.h"
-#include "soc/dport_reg.h"
-
-#define STREAM_BUF_SIZE 32
-StreamBufferHandle_t xStreamBuffer;
+#include "esp_log.h"
 
 void init_gpio_display() {
 	gpio_reset_pin( PIN_NUM_CS );
@@ -25,43 +14,6 @@ void init_gpio_display() {
 
 	gpio_reset_pin( PIN_NUM_RST );
 	gpio_set_direction( PIN_NUM_RST, GPIO_MODE_OUTPUT );
-}
-
-// Задача нажатия кнопок
-void button_task(void *pvParameter) {
-    int pins[] = BUTTON_PINS;
-    int num_pins = 9; // 9 кнопок
-
-    for ( ;; ) {
-        for (int i = 0; i < num_pins; i++) {
-            if (gpio_get_level(pins[i]) == 0) { // Если кнопка нажата (LOW, так как подтяжка к VCC)
-                printf("Нажата клавиша: %d\n", pins[i]);
-                xStreamBufferSend(xStreamBuffer, &pins[i], sizeof(pins[i]), 0);
-                vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_DELAY_MS)); // Задержка для устранения дребезга
-            }
-        }
-        vTaskDelay(pdMS_TO_TICKS(10)); // Небольшая задержка для снижения нагрузки на CPU
-    }
-}
-
-void init_gpio_button() {
-    // Настраиваем пины как входы с подтягивающими резисторами
-    gpio_config_t io_conf;
-    io_conf.intr_type = GPIO_INTR_DISABLE; // Отключаем прерывания
-    io_conf.mode = GPIO_MODE_INPUT;       // Режим ввода
-    io_conf.pin_bit_mask = 0;             // Очищаем маску
-
-    // Добавляем пины в маску
-    uint64_t button_pins = 0;
-    int pins[] = BUTTON_PINS;
-    for (int i = 0; i < sizeof(pins) / sizeof(pins[0]); i++) {
-        button_pins |= (1ULL << pins[i]);
-    }
-    io_conf.pin_bit_mask = button_pins;
-
-    io_conf.pull_up_en = GPIO_PULLUP_ENABLE; // Включаем подтягивающие резисторы
-    io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
-    gpio_config(&io_conf);
 }
 
 void spi_init(spi_device_handle_t *spi) {
