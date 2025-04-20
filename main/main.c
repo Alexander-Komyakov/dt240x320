@@ -276,7 +276,8 @@ void app_main(void)
     send_command(spi, CMD_DISPLAY_ON);
     send_command(spi, CMD_NORMAL_MODE);
 
-    uint8_t madctl_value = 0xB0;
+//    uint8_t madctl_value = 0x48;
+    uint8_t madctl_value = 0x70;
     send_command(spi, CMD_MADCTL);
     send_data(spi, &madctl_value, 1);
 
@@ -309,16 +310,71 @@ void app_main(void)
 */
 
     int received = 0;
-	while (1)
-	{
-        xStreamBufferReceive(xStreamBuffer, &received, sizeof(received), 0);
-        //if(xStreamBufferReceive(xStreamBuffer, &received, sizeof(received), portMAX_DELAY) > 0)
-        //{
-        //    // Обработка числа
-        //}
-        fill_rect(spi, 96+received, 120, 32, 40, 0x0000);
-    	draw_image(spi, &my_image_1);
+	int x_pos = 96, y_pos = 120;
+
+
+	int prev_x = x_pos, prev_y = y_pos;
+
+	// Заливаем весь экран белым (только при старте)
+	fill_screen(spi, 0xFFFF);
+
+	while (1) {
+	    if (xStreamBufferReceive(xStreamBuffer, &received, sizeof(received), 0) > 0) {
+	        switch (received) {
+	            case GPIO_NUM_13: y_pos -= 3; break;  // Вверх
+	            case GPIO_NUM_25: y_pos += 3; break;  // Вниз
+	            case GPIO_NUM_21: x_pos -= 3; break;  // Влево
+	            case GPIO_NUM_14: x_pos += 3; break;  // Вправо
+	        }
+
+	        // Ограничиваем координаты
+	        x_pos = (x_pos < 0) ? 0 : (x_pos > DISPLAY_WIDTH - 32) ? DISPLAY_WIDTH - 32 : x_pos;
+	        y_pos = (y_pos < 0) ? 0 : (y_pos > DISPLAY_HEIGHT - 40) ? DISPLAY_HEIGHT - 40 : y_pos;
+
+	        // Стираем старый квадрат (заливаем белым)
+	        fill_rect(spi, prev_x, prev_y, 32, 40, 0xFFFF);
+	        
+	        // Рисуем новый квадрат (чёрный)
+	        fill_rect(spi, x_pos, y_pos, 32, 40, 0x0000);
+	        
+	        prev_x = x_pos;
+	        prev_y = y_pos;
+	    }
+	    vTaskDelay(10 / portTICK_PERIOD_MS);  // 20 мс (~50 FPS)
 	}
+
+//	while (1) {
+//	    if (xStreamBufferReceive(xStreamBuffer, &received, sizeof(received), 0) > 0) {
+//	        // Обработка нажатия кнопки
+//	        switch (received) {
+//	            case GPIO_NUM_13: // Вверх
+//	                y_pos -= 3;
+//	                break;
+//	            case GPIO_NUM_25: // Вниз
+//	                y_pos += 3;
+//	                break;
+//	            case GPIO_NUM_21: // Влево
+//	                x_pos -= 3;
+//	                break;
+//	            case GPIO_NUM_14: // Вправо
+//	                x_pos += 3;
+//	                break;
+//	            default:
+//	                break;
+//	        }
+
+	        // Ограничение координат
+//	        if (x_pos < 0) x_pos = 0;
+//	        if (x_pos > DISPLAY_WIDTH - 32) x_pos = DISPLAY_WIDTH - 32;
+//	        if (y_pos < 0) y_pos = 0;
+//	        if (y_pos > DISPLAY_HEIGHT - 40) y_pos = DISPLAY_HEIGHT - 40;
+
+	        // Отрисовка
+//	        fill_screen(spi, 0xFFFF); // Белый фон
+//	        fill_rect(spi, x_pos, y_pos, 32, 40, 0x0000); // Черный квадрат
+//	    }
+//	    vTaskDelay(10 / portTICK_PERIOD_MS);
+//	}
 
 /*
 
