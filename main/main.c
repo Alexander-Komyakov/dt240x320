@@ -320,12 +320,26 @@ void app_main(void)
 
 	while (1) {
 	    if (xStreamBufferReceive(xStreamBuffer, &received, sizeof(received), 0) > 0) {
+			if (received == GPIO_NUM_13) {
+				y_pos -= 3;
+			}
+            if (received == GPIO_NUM_25) {
+                y_pos += 3;
+            } 
+            if (received == GPIO_NUM_21) {
+                x_pos -= 3;
+            } 
+            if (received == GPIO_NUM_14) {
+                x_pos += 3;
+            } 
+/*
 	        switch (received) {
 	            case GPIO_NUM_13: y_pos -= 3; break;  // Вверх
 	            case GPIO_NUM_25: y_pos += 3; break;  // Вниз
 	            case GPIO_NUM_21: x_pos -= 3; break;  // Влево
 	            case GPIO_NUM_14: x_pos += 3; break;  // Вправо
 	        }
+*/
 
 	        // Ограничиваем координаты
 	        x_pos = (x_pos < 0) ? 0 : (x_pos > DISPLAY_WIDTH - 32) ? DISPLAY_WIDTH - 32 : x_pos;
@@ -340,7 +354,7 @@ void app_main(void)
 	        prev_x = x_pos;
 	        prev_y = y_pos;
 	    }
-	    vTaskDelay(10 / portTICK_PERIOD_MS);  // 20 мс (~50 FPS)
+	    vTaskDelay(10 / portTICK_PERIOD_MS);  // 10 (~100 FPS)
 	}
 
 //	while (1) {
