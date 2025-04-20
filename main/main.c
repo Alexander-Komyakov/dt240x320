@@ -308,25 +308,6 @@ void app_main(void)
     fill_rect(spi, 96, 120, 32, 40, 0xFFFF);
 */
 
-    // 1. Отключаем JTAG через прямое обращение к регистрам
-    uint32_t reg_val = DPORT_READ_PERI_REG(DPORT_PERIP_CLK_EN_REG);
-    reg_val &= ~0x00000080;  // Сбрасываем бит 7 (JTAG CLK)
-    DPORT_WRITE_PERI_REG(DPORT_PERIP_CLK_EN_REG, reg_val);
-    
-    reg_val = DPORT_READ_PERI_REG(DPORT_PERIP_RST_EN_REG);
-    reg_val |= 0x00000080;   // Устанавливаем бит 7 (JTAG RST)
-    DPORT_WRITE_PERI_REG(DPORT_PERIP_RST_EN_REG, reg_val);
-
-    // 2. Освобождаем GPIO14
-    gpio_reset_pin(GPIO_NUM_14);
-    gpio_set_direction(GPIO_NUM_14, GPIO_MODE_INPUT);
-    gpio_set_pull_mode(GPIO_NUM_14, GPIO_FLOATING);
-    
-    // 3. Дополнительная блокировка
-    #ifdef gpio_hold_en
-    gpio_hold_en(GPIO_NUM_14);
-    #endif
-
     int received = 0;
 	while (1)
 	{
@@ -337,15 +318,6 @@ void app_main(void)
         //}
         fill_rect(spi, 96+received, 120, 32, 40, 0x0000);
     	draw_image(spi, &my_image_1);
-        fill_rect(spi, 96+received, 120, 32, 40, 0x0000);
-    	draw_image(spi, &my_image_2);
-        fill_rect(spi, 96+received, 120, 32, 40, 0x0000);
-    	draw_image(spi, &my_image_3);
-        fill_rect(spi, 96+received, 120, 32, 40, 0x0000);
-    	draw_image(spi, &my_image_4);
-        fill_rect(spi, 96+received, 120, 32, 40, 0x0000);
-    	draw_image(spi, &my_image_5);
-        fill_rect(spi, 96+received, 120, 32, 40, 0x0000);
 	}
 
 /*
