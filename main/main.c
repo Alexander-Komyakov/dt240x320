@@ -9,10 +9,10 @@
 #include "image.c"
 #include "esp_rom_gpio.h"
 #include "freertos/stream_buffer.h"
+#include "soc/dport_reg.h"
 
 #define STREAM_BUF_SIZE 32
 StreamBufferHandle_t xStreamBuffer;
-
 
 void init_gpio_display() {
 	gpio_reset_pin( PIN_NUM_CS );
@@ -35,6 +35,7 @@ void button_task(void *pvParameter) {
     for ( ;; ) {
         for (int i = 0; i < num_pins; i++) {
             if (gpio_get_level(pins[i]) == 0) { // Если кнопка нажата (LOW, так как подтяжка к VCC)
+                printf("Нажата клавиша: %d\n", pins[i]);
                 xStreamBufferSend(xStreamBuffer, &pins[i], sizeof(pins[i]), 0);
                 vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_DELAY_MS)); // Задержка для устранения дребезга
             }
@@ -306,6 +307,25 @@ void app_main(void)
     fill_rect(spi, 96, 80, 32, 40, 0xEEEE);
     fill_rect(spi, 96, 120, 32, 40, 0xFFFF);
 */
+
+    // 1. Отключаем JTAG через прямое обращение к регистрам
+    uint32_t reg_val = DPORT_READ_PERI_REG(DPORT_PERIP_CLK_EN_REG);
+    reg_val &= ~0x00000080;  // Сбрасываем бит 7 (JTAG CLK)
+    DPORT_WRITE_PERI_REG(DPORT_PERIP_CLK_EN_REG, reg_val);
+    
+    reg_val = DPORT_READ_PERI_REG(DPORT_PERIP_RST_EN_REG);
+    reg_val |= 0x00000080;   // Устанавливаем бит 7 (JTAG RST)
+    DPORT_WRITE_PERI_REG(DPORT_PERIP_RST_EN_REG, reg_val);
+
+    // 2. Освобождаем GPIO14
+    gpio_reset_pin(GPIO_NUM_14);
+    gpio_set_direction(GPIO_NUM_14, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(GPIO_NUM_14, GPIO_FLOATING);
+    
+    // 3. Дополнительная блокировка
+    #ifdef gpio_hold_en
+    gpio_hold_en(GPIO_NUM_14);
+    #endif
 
     int received = 0;
 	while (1)
