@@ -315,7 +315,9 @@ void app_main(void)
 	        y_pos = (y_pos < 0) ? 0 : (y_pos > DISPLAY_HEIGHT - 40) ? DISPLAY_HEIGHT - 40 : y_pos;
 
 	        // Стираем старый квадрат (заливаем белым)
-	        fill_rect(spi, prev_x, prev_y, 32, 40, 0xFFFF);
+            if (prev_x != x_pos || prev_y != y_pos) {
+	            fill_rect(spi, prev_x, prev_y, 32, 40, 0xFFFF);
+            }
 	        
 	        // Рисуем новый квадрат (чёрный)
 	        fill_rect(spi, x_pos, y_pos, 32, 40, 0x0000);
