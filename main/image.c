@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include "image.h"
 
 const uint16_t my_image_pixels_1[320 * 240] = {
