@@ -44,16 +44,16 @@ void app_main(void)
 
 	while (1) {
 	    if (xStreamBufferReceive(xStreamBuffer, &received, sizeof(received), 0) > 0) {
-			if (received == GPIO_NUM_13) {
+			if (received == BUTTON_UP) {
 				y_pos -= 3;
 			}
-            if (received == GPIO_NUM_25) {
+            if (received == BUTTON_DOWN) {
                 y_pos += 3;
             } 
-            if (received == GPIO_NUM_21) {
+            if (received == BUTTON_LEFT) {
                 x_pos -= 3;
             } 
-            if (received == GPIO_NUM_14) {
+            if (received == BUTTON_RIGHT) {
                 x_pos += 3;
             } 
 
