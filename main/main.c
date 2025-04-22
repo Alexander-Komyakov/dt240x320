@@ -73,8 +73,8 @@ void app_main(void)
             } 
 
 	        // Ограничиваем координаты
-	        image_kunglao_1.x = ((uint16_t) (image_kunglao_1.x + speed) <= speed) ? 0 : (image_kunglao_1.x > DISPLAY_WIDTH - 32) ? DISPLAY_WIDTH - 32 : image_kunglao_1.x;
-	        image_kunglao_1.y = ((uint16_t) (image_kunglao_1.y + speed) <= speed) ? 0 : (image_kunglao_1.y > DISPLAY_HEIGHT - 40) ? DISPLAY_HEIGHT - 40 : image_kunglao_1.y;
+	        image_kunglao_1.x = ((uint16_t) (image_kunglao_1.x + speed) <= speed) ? 0 : (image_kunglao_1.x > DISPLAY_WIDTH - 40) ? DISPLAY_WIDTH - 40 : image_kunglao_1.x;
+	        image_kunglao_1.y = ((uint16_t) (image_kunglao_1.y + speed) <= speed) ? 0 : (image_kunglao_1.y > DISPLAY_HEIGHT - 68) ? DISPLAY_HEIGHT - 68 : image_kunglao_1.y;
 
 	        // Стираем старый квадрат (заливаем белым)
             //if (prev_x != image_kunglao_1.x || prev_y != image_kunglao_1.y) {
