@@ -38,32 +38,41 @@ void app_main(void)
 
     image_kunglao_1.x = 100;
     image_kunglao_1.y = 100;
-
 	int prev_x = image_kunglao_1.x, prev_y = image_kunglao_1.y;
-
-
+    uint8_t speed = 3;
 	draw_image(spi, &image_background_forest_1);
-//    draw_image(spi, &image_kunglao_1);
 
-
+/*
+    Vertical Scrolling
+    uint16_t tfa = 0;
+    uint16_t vsa = 320;
+    uint16_t bfa = 0;
+    uint16_t ssa = 0;
+    uint16_t i = 1;
+*/
 	while (1) {
+/*
+        if (i == 320) { i = 1; }; i++;
+        ssa = 0+i;
+        vertical_scroll(spi, &tfa, &vsa, &bfa, &ssa);
+*/
 	    if (xStreamBufferReceive(xStreamBuffer, &received, sizeof(received), 0) > 0) {
-			if (received == BUTTON_UP && image_kunglao_1.y >= 3) {
-				image_kunglao_1.y -= 3;
+			if (received == BUTTON_UP) {
+				image_kunglao_1.y -= speed;
 			}
             if (received == BUTTON_DOWN) {
-                image_kunglao_1.y += 3;
+                image_kunglao_1.y += speed;
             } 
-            if (received == BUTTON_LEFT && image_kunglao_1.x >= 3) {
-                image_kunglao_1.x -= 3;
+            if (received == BUTTON_LEFT) {
+                image_kunglao_1.x -= speed;
             } 
             if (received == BUTTON_RIGHT) {
-                image_kunglao_1.x += 3;
+                image_kunglao_1.x += speed;
             } 
 
 	        // Ограничиваем координаты
-	        image_kunglao_1.x = (image_kunglao_1.x < 0) ? 0 : (image_kunglao_1.x > DISPLAY_WIDTH - 32) ? DISPLAY_WIDTH - 32 : image_kunglao_1.x;
-	        image_kunglao_1.y = (image_kunglao_1.y < 0) ? 0 : (image_kunglao_1.y > DISPLAY_HEIGHT - 40) ? DISPLAY_HEIGHT - 40 : image_kunglao_1.y;
+	        image_kunglao_1.x = ((uint16_t) (image_kunglao_1.x + speed) <= speed) ? 0 : (image_kunglao_1.x > DISPLAY_WIDTH - 32) ? DISPLAY_WIDTH - 32 : image_kunglao_1.x;
+	        image_kunglao_1.y = ((uint16_t) (image_kunglao_1.y + speed) <= speed) ? 0 : (image_kunglao_1.y > DISPLAY_HEIGHT - 40) ? DISPLAY_HEIGHT - 40 : image_kunglao_1.y;
 
 	        // Стираем старый квадрат (заливаем белым)
             if (prev_x != image_kunglao_1.x || prev_y != image_kunglao_1.y) {
@@ -78,26 +87,5 @@ void app_main(void)
 	    }
 	    vTaskDelay(10 / portTICK_PERIOD_MS);  // 10 (~100 FPS)
 	}
-
-
-/*
-    Vertical Scrolling
-
-*/
-/*
-    uint16_t tfa = 0;
-    uint16_t vsa = 320;
-    uint16_t bfa = 0;
-    uint16_t ssa = 0;
-    uint16_t i = 1;
-    while (1) {
-        if (i == 320) { i = 1; }; i++;
-        ssa = 0+i;
-        vertical_scroll(spi, &tfa, &vsa, &bfa, &ssa);
-        //fill_screen(spi, 0xCCCC+i);
-        vTaskDelay(10 / portTICK_PERIOD_MS); // Задержка для видимости прокрутки
-        printf("ok\n");
-    }
-*/
 }
 
