@@ -2,6 +2,7 @@
 #include "button.h"
 #include "esp_log.h"
 #include "display.h"
+#include "image_structure.h"
 
 
 void app_main(void)
@@ -41,6 +42,12 @@ void app_main(void)
 
 	// Заливаем весь экран белым (только при старте)
 	fill_screen(spi, 0xFFFF);
+
+	image_kunglao_1.x = 100;
+	image_kunglao_1.y = 100;
+	draw_image(spi, &image_background_forest_1);
+    draw_image(spi, &image_kunglao_1);
+
 
 	while (1) {
 	    if (xStreamBufferReceive(xStreamBuffer, &received, sizeof(received), 0) > 0) {
