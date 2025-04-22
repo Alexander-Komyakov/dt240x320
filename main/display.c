@@ -22,8 +22,47 @@ void draw_image(spi_device_handle_t spi, const Image *my_image) {
         ESP_LOGE("DMA", "Не хватило памяти!");
         return;
     }
+
     // Копируем данные из flash в RAM
     memcpy(dma_buffer, my_image->pixels, my_image->size_image * sizeof(uint16_t));
+    send_data16b(spi, dma_buffer, my_image->size_image);
+    free(dma_buffer);
+}
+
+void draw_image_background(spi_device_handle_t spi, const Image *my_image, uint16_t *background) {
+    send_command(spi, CMD_COLUMN);
+    uint8_t col_data[4] = {my_image->x >> 8, my_image->x & 0xFF, (my_image->x - 1 + my_image->width) >> 8, (my_image->x - 1 + my_image->width) & 0xFF};
+    send_data(spi, col_data, 4);
+
+    send_command(spi, CMD_ROW);
+    uint8_t row_data[4] = {0, my_image->y & 0xFF, 0, (my_image->y - 1 + my_image->height) & 0xFF};
+    send_data(spi, row_data, 4);
+
+    send_command(spi, CMD_SET_PIXEL);
+
+    // Создаем DMA буфер
+    uint16_t *dma_buffer = heap_caps_malloc(
+        my_image->size_image * sizeof(uint16_t),
+        MALLOC_CAP_DMA
+    );
+    // Проверяем доступность памяти
+    if (!dma_buffer) {
+        ESP_LOGE("DMA", "Не хватило памяти!");
+        return;
+    }
+
+    for (int i = 0; i < my_image->size_image; i++) {
+        if (my_image->pixels[i] == 0xFFFF) {
+            // Если пиксель прозрачный, берем фон
+            int bg_x = my_image->x + (i % my_image->width);
+            int bg_y = my_image->y + (i / my_image->width);
+            dma_buffer[i] = background[bg_y * DISPLAY_WIDTH + bg_x];
+        } else {
+            // Иначе берем пиксель из спрайта
+            dma_buffer[i] = my_image->pixels[i];
+        }
+    }
+
     send_data16b(spi, dma_buffer, my_image->size_image);
     free(dma_buffer);
 }

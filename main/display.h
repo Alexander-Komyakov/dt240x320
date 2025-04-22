@@ -39,3 +39,4 @@ void fill_screen(spi_device_handle_t spi, uint16_t color);
 void draw_pixel(spi_device_handle_t spi, uint16_t x, uint16_t y, uint16_t color);
 void vertical_scroll(spi_device_handle_t spi, uint16_t* tfa, uint16_t* vsa, uint16_t* bfa, uint16_t* ssa);
 void draw_image(spi_device_handle_t spi, const Image *my_image);
+void draw_image_background(spi_device_handle_t spi, const Image *my_image, uint16_t *background);
