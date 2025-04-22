@@ -35,49 +35,46 @@ void app_main(void)
 
 	// Передвижение персонажа(квадрата)
     int received = 0;
-	int x_pos = 96, y_pos = 120;
+
+    image_kunglao_1.x = 100;
+    image_kunglao_1.y = 100;
+
+	int prev_x = image_kunglao_1.x, prev_y = image_kunglao_1.y;
 
 
-	int prev_x = x_pos, prev_y = y_pos;
-
-	// Заливаем весь экран белым (только при старте)
-	fill_screen(spi, 0xFFFF);
-
-	image_kunglao_1.x = 100;
-	image_kunglao_1.y = 100;
 	draw_image(spi, &image_background_forest_1);
-    draw_image(spi, &image_kunglao_1);
+//    draw_image(spi, &image_kunglao_1);
 
 
 	while (1) {
 	    if (xStreamBufferReceive(xStreamBuffer, &received, sizeof(received), 0) > 0) {
-			if (received == BUTTON_UP) {
-				y_pos -= 3;
+			if (received == BUTTON_UP && image_kunglao_1.y >= 3) {
+				image_kunglao_1.y -= 3;
 			}
             if (received == BUTTON_DOWN) {
-                y_pos += 3;
+                image_kunglao_1.y += 3;
             } 
-            if (received == BUTTON_LEFT) {
-                x_pos -= 3;
+            if (received == BUTTON_LEFT && image_kunglao_1.x >= 3) {
+                image_kunglao_1.x -= 3;
             } 
             if (received == BUTTON_RIGHT) {
-                x_pos += 3;
+                image_kunglao_1.x += 3;
             } 
 
 	        // Ограничиваем координаты
-	        x_pos = (x_pos < 0) ? 0 : (x_pos > DISPLAY_WIDTH - 32) ? DISPLAY_WIDTH - 32 : x_pos;
-	        y_pos = (y_pos < 0) ? 0 : (y_pos > DISPLAY_HEIGHT - 40) ? DISPLAY_HEIGHT - 40 : y_pos;
+	        image_kunglao_1.x = (image_kunglao_1.x < 0) ? 0 : (image_kunglao_1.x > DISPLAY_WIDTH - 32) ? DISPLAY_WIDTH - 32 : image_kunglao_1.x;
+	        image_kunglao_1.y = (image_kunglao_1.y < 0) ? 0 : (image_kunglao_1.y > DISPLAY_HEIGHT - 40) ? DISPLAY_HEIGHT - 40 : image_kunglao_1.y;
 
 	        // Стираем старый квадрат (заливаем белым)
-            if (prev_x != x_pos || prev_y != y_pos) {
+            if (prev_x != image_kunglao_1.x || prev_y != image_kunglao_1.y) {
 	            fill_rect(spi, prev_x, prev_y, 32, 40, 0xFFFF);
             }
 	        
-	        // Рисуем новый квадрат (чёрный)
-	        fill_rect(spi, x_pos, y_pos, 32, 40, 0x0000);
+			// Рисуем нового кунглао
+			draw_image(spi, &image_kunglao_1);
 	        
-	        prev_x = x_pos;
-	        prev_y = y_pos;
+	        prev_x = image_kunglao_1.x;
+	        prev_y = image_kunglao_1.y;
 	    }
 	    vTaskDelay(10 / portTICK_PERIOD_MS);  // 10 (~100 FPS)
 	}
