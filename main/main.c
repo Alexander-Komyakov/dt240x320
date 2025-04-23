@@ -24,8 +24,6 @@ void app_main(void)
     send_command(spi, CMD_DISPLAY_ON);
     send_command(spi, CMD_NORMAL_MODE);
 
-    send_command(spi, 0x13);
-
     uint8_t madctl_value = 0x70;
     send_command(spi, CMD_MADCTL);
     send_data(spi, &madctl_value, 1);
@@ -41,9 +39,8 @@ void app_main(void)
     image_kunglao_1.x = 100;
     image_kunglao_1.y = 100;
 	int prev_x = image_kunglao_1.x, prev_y = image_kunglao_1.y;
-    uint8_t speed = 3;
+    uint8_t speed = 1;
 	draw_image(spi, &image_background_forest_1);
-
 /*
     Vertical Scrolling
     uint16_t tfa = 0;
@@ -52,6 +49,7 @@ void app_main(void)
     uint16_t ssa = 0;
     uint16_t i = 1;
 */
+    draw_image_background(spi, &image_kunglao_1, image_background_forest_pixels_1);
 	while (1) {
 /*
         if (i == 320) { i = 1; }; i++;
@@ -73,25 +71,22 @@ void app_main(void)
             } 
 
 	        // Ограничиваем координаты
-	        image_kunglao_1.x = ((uint16_t) (image_kunglao_1.x + speed) <= speed) ? 0 : (image_kunglao_1.x > DISPLAY_WIDTH - 40) ? DISPLAY_WIDTH - 40 : image_kunglao_1.x;
-	        image_kunglao_1.y = ((uint16_t) (image_kunglao_1.y + speed) <= speed) ? 0 : (image_kunglao_1.y > DISPLAY_HEIGHT - 68) ? DISPLAY_HEIGHT - 68 : image_kunglao_1.y;
-
+	        image_kunglao_1.x = ((uint16_t) (image_kunglao_1.x + speed) <= speed) ? 0 : (image_kunglao_1.x > DISPLAY_WIDTH - image_kunglao_1.width) ? DISPLAY_WIDTH - image_kunglao_1.width : image_kunglao_1.x;
+	        image_kunglao_1.y = ((uint16_t) (image_kunglao_1.y + speed) <= speed) ? 0 : (image_kunglao_1.y > DISPLAY_HEIGHT - image_kunglao_1.height) ? DISPLAY_HEIGHT - image_kunglao_1.height : image_kunglao_1.y;
+		    draw_image_background(spi, &image_kunglao_1, image_background_forest_pixels_1);
 	        // Стираем старый квадрат (заливаем белым)
             //if (prev_x != image_kunglao_1.x || prev_y != image_kunglao_1.y) {
 	        //    fill_rect(spi, prev_x, prev_y, 32, 40, 0xFFFF);
             //}
-	        
-			// Рисуем нового кунглао
-			draw_image_background(spi, &image_kunglao_1, image_background_forest_pixels_1);
-	        
+		    // Рисуем нового кунглао
+		    //draw_image_background(spi, &image_kunglao_1, image_background_forest_pixels_1);
 	        prev_x = image_kunglao_1.x;
 	        prev_y = image_kunglao_1.y;
-            //fill_screen(spi, 0x0000);
-            //fill_screen(spi, 0xFFFF);
-            //fill_screen(spi, 0xCCCC);
-            //fill_screen(spi, 0xBBBB);
-	    }
+        }
+        //fill_screen(spi, 0x0000);
+        //fill_screen(spi, 0xFFFF);
+        //fill_screen(spi, 0xCCCC);
+        //fill_screen(spi, 0xBBBB);
 	    vTaskDelay(10 / portTICK_PERIOD_MS);  // 10 (~100 FPS)
 	}
 }
-

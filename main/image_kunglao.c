@@ -470,6 +470,6 @@ Image image_kunglao_1 = {
     .y = 0,
     .width = 64,
     .height = 71,
-    .size_image = 9226,
+    .size_image = 4544,
     .pixels = image_kunglao_pixels_1
 };
