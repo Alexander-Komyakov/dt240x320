@@ -29,7 +29,7 @@ void draw_image(spi_device_handle_t spi, const Image *my_image) {
     free(dma_buffer);
 }
 
-void draw_image_background(spi_device_handle_t spi, const Image *my_image, uint16_t *background) {
+void draw_image_background(spi_device_handle_t spi, const Image *my_image, const uint16_t *background) {
     send_command(spi, CMD_COLUMN);
     uint8_t col_data[4] = {my_image->x >> 8, my_image->x & 0xFF, (my_image->x - 1 + my_image->width) >> 8, (my_image->x - 1 + my_image->width) & 0xFF};
     send_data(spi, col_data, 4);

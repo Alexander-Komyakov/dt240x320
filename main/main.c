@@ -38,7 +38,6 @@ void app_main(void)
 
     image_kunglao_1.x = 100;
     image_kunglao_1.y = 100;
-	int prev_x = image_kunglao_1.x, prev_y = image_kunglao_1.y;
     uint8_t speed = 1;
 	draw_image(spi, &image_background_forest_1);
 /*
@@ -80,8 +79,6 @@ void app_main(void)
             //}
 		    // Рисуем нового кунглао
 		    //draw_image_background(spi, &image_kunglao_1, image_background_forest_pixels_1);
-	        prev_x = image_kunglao_1.x;
-	        prev_y = image_kunglao_1.y;
         }
         //fill_screen(spi, 0x0000);
         //fill_screen(spi, 0xFFFF);
