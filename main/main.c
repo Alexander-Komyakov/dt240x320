@@ -32,7 +32,6 @@ void app_main(void)
     // Создаем задачу для обработки нажатий
     xTaskCreate(button_task, "button_task", 2048, NULL, 1, NULL);
 
-
 	// Передвижение персонажа(квадрата)
     int received = 0;
 
@@ -40,21 +39,8 @@ void app_main(void)
     image_kunglao_1.y = 100;
     uint8_t speed = 1;
 	draw_image(spi, &image_background_forest_1);
-/*
-    Vertical Scrolling
-    uint16_t tfa = 0;
-    uint16_t vsa = 320;
-    uint16_t bfa = 0;
-    uint16_t ssa = 0;
-    uint16_t i = 1;
-*/
     draw_image_background(spi, &image_kunglao_1, image_background_forest_pixels_1);
 	while (1) {
-/*
-        if (i == 320) { i = 1; }; i++;
-        ssa = 0+i;
-        vertical_scroll(spi, &tfa, &vsa, &bfa, &ssa);
-*/
 	    if (xStreamBufferReceive(xStreamBuffer, &received, sizeof(received), 0) > 0) {
 			if (received == BUTTON_UP) {
 				image_kunglao_1.y -= speed;
@@ -73,17 +59,7 @@ void app_main(void)
 	        image_kunglao_1.x = ((uint16_t) (image_kunglao_1.x + speed) <= speed) ? 0 : (image_kunglao_1.x > DISPLAY_WIDTH - image_kunglao_1.width) ? DISPLAY_WIDTH - image_kunglao_1.width : image_kunglao_1.x;
 	        image_kunglao_1.y = ((uint16_t) (image_kunglao_1.y + speed) <= speed) ? 0 : (image_kunglao_1.y > DISPLAY_HEIGHT - image_kunglao_1.height) ? DISPLAY_HEIGHT - image_kunglao_1.height : image_kunglao_1.y;
 		    draw_image_background(spi, &image_kunglao_1, image_background_forest_pixels_1);
-	        // Стираем старый квадрат (заливаем белым)
-            //if (prev_x != image_kunglao_1.x || prev_y != image_kunglao_1.y) {
-	        //    fill_rect(spi, prev_x, prev_y, 32, 40, 0xFFFF);
-            //}
-		    // Рисуем нового кунглао
-		    //draw_image_background(spi, &image_kunglao_1, image_background_forest_pixels_1);
         }
-        //fill_screen(spi, 0x0000);
-        //fill_screen(spi, 0xFFFF);
-        //fill_screen(spi, 0xCCCC);
-        //fill_screen(spi, 0xBBBB);
 	    vTaskDelay(10 / portTICK_PERIOD_MS);  // 10 (~100 FPS)
 	}
 }
