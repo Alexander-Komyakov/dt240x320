@@ -30,6 +30,7 @@
 
 void init_gpio_display();
 void spi_init(spi_device_handle_t *spi);
+void init_display(spi_device_handle_t spi);
 void send_command(spi_device_handle_t spi, uint8_t cmd);
 void send_command_no_dc(spi_device_handle_t spi, uint8_t cmd);
 void send_data(spi_device_handle_t spi, const uint8_t *data, size_t length);

@@ -15,19 +15,7 @@ void app_main(void)
 
     spi_init(&spi);
 
-    const size_t data = 1;
-    send_command(spi, CMD_SOFTWARE_RESET);
-    send_command(spi, CMD_SLEEP_OUT);
-    send_command(spi, CMD_SET_RGB);
-    send_data(spi, (uint8_t[]){0x05}, data);  //16-bit/pixel 65K-Colors(RGB 5-6-5-bit Input)
-
-    send_command(spi, CMD_DISPLAY_ON);
-    send_command(spi, CMD_NORMAL_MODE);
-
-    uint8_t madctl_value = 0x70;
-    send_command(spi, CMD_MADCTL);
-    send_data(spi, &madctl_value, 1);
-
+    init_display(spi);
     init_gpio_button();
     // Создаем задачу для обработки нажатий
     xTaskCreate(button_task, "button_task", 2048, NULL, 1, NULL);
