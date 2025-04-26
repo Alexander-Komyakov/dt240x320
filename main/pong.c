@@ -3,12 +3,12 @@
 void game_pong(spi_device_handle_t spi) {
     xStreamBuffer = xStreamBufferCreate(STREAM_BUF_SIZE, sizeof(int));
 
-	struct Player player = {60, 60, 30, 50, 0xFFFF}; // 0xFFFF - белый цвет
-//	struct Player bot = {260, 180, 30, 60, 0xFFFF};
+	struct Player player = {30, 80, 30, 70, 0xFFFF}; // 0xFFFF - белый цвет
+	struct Player bot = {260, 80, 30, 70, 0xFFFF};
 
     fill_screen(spi, 0x0000);
 	fill_rect(spi, player.x, player.y, player.width, player.height, player.color);
-//	fill_rect(spi, bot.x, bot.y, bot.width, bot.height, bot.color);
+	fill_rect(spi, bot.x, bot.y, bot.width, bot.height, bot.color);
 
 	uint8_t speed = 1;
 
