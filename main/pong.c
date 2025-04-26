@@ -74,6 +74,7 @@ void game_pong(spi_device_handle_t spi) {
  
         printf("ball.x: %d, ball_speed_x: %d\n", ball.x, ball_speed_x);
         ball.x += ball_speed_x;
+        ball.y += ball_speed_y;
         // Стираем за шариком
         if (ball.x < old_ball_x) {
             fill_rect(spi, ball.x + ball.width, ball.y, old_ball_x - ball.x, 
@@ -83,12 +84,19 @@ void game_pong(spi_device_handle_t spi) {
             fill_rect(spi, old_ball_x, ball.y, ball.x - old_ball_x, 
                      ball.height, 0x0000);
         }
-        // Движение шарика
+        // Движение шарика X
         if (ball.x >= DISPLAY_WIDTH - ball.width) {
             ball_speed_x = -ball_speed_x;
         }
         else if (ball.x <= 0) {
             ball_speed_x = -ball_speed_x;
+        }
+        // Движение шарика Y
+        if (ball.y >= DISPLAY_HEIGHT - ball.height) {
+            ball_speed_y = -ball_speed_y;
+        }
+        else if (ball.y <= 0) {
+            ball_speed_y = -ball_speed_y;
         }
         old_ball_x = ball.x;
         old_ball_y = ball.y;
