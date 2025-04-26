@@ -5,17 +5,16 @@ void game_pong(spi_device_handle_t spi) {
 
     struct Player player = {30, 80, 30, 70, 0xFFFF}; // 0xFFFF - белый цвет
     struct Player bot = {260, 80, 30, 70, 0xFFFF};
+    struct Player ball = {60, 110, 10, 10, 0xFFFF}; // При указанных позициях 60 по x - граница где мяч должен касаться прямоугольников
 
     fill_screen(spi, 0x0000);
     fill_rect(spi, player.x, player.y, player.width, player.height, player.color);
     fill_rect(spi, bot.x, bot.y, bot.width, bot.height, bot.color);
-
-//  struct Player ball = {60, 110, 10, 10, 0xFFFF}; // При указанных позициях 60 по x - граница где мяч должен касаться прямоугольников
-//  fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
-//  uint8_t ball_speed = 2;
+    fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
 
     uint8_t speed = 2;
     int8_t bot_speed = 1; // Скорость движения бота - за каждое движение +1 пиксель
+    uint8_t ball_speed = 2;
 
     int received_button = 0;
     uint16_t old_coordinates = player.y;
