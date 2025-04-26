@@ -8,8 +8,6 @@
 #include "freertos/stream_buffer.h"
 #include "esp_log.h"
 #include "image_structure.h"
-#include "image_kunglao.h"
-#include "image_background_forest.h"
 #include "spi.h"
 
 #define DISPLAY_WIDTH 320
