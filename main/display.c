@@ -69,28 +69,32 @@ void draw_image_background(spi_device_handle_t spi, const Image *my_image, const
 
 void fill_rect(spi_device_handle_t spi, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color) {
     send_command(spi, CMD_COLUMN);
-    uint8_t col_data[4] = {x >> 8, x & 0xFF, (x + width) >> 8, (x + width) & 0xFF};
+    uint8_t col_data[4] = {x >> 8, x & 0xFF, (x + width - 1) >> 8, (x + width - 1) & 0xFF};
     send_data(spi, col_data, 4);
 
     send_command(spi, CMD_ROW);
-    uint8_t row_data[4] = {0, y & 0xFF, 0, (y + height) & 0xFF};
+    uint8_t row_data[4] = {0, y & 0xFF, 0, (y + height - 1) & 0xFF};
     send_data(spi, row_data, 4);
 
     send_command(spi, CMD_SET_PIXEL);
 
-    uint32_t buf_size = ((width + sizeof(uint32_t)) * (height + sizeof(uint32_t)) * 2);
+    uint32_t pixel_count = width * height;
+    uint32_t buf_size = pixel_count * 2; // 2 bytes per pixel
     uint8_t *pixel_buf = heap_caps_malloc(buf_size, MALLOC_CAP_DMA | MALLOC_CAP_32BIT);
+    
+    if (!pixel_buf) {
+        ESP_LOGE("FILL_RECT", "Failed to allocate memory");
+        return;
+    }
 
-    for (int i = 0; i < (buf_size / 2) + sizeof(uint32_t); i++) {
-        pixel_buf[i * 2] = color >> 8;   // Старший байт
+    for (uint32_t i = 0; i < pixel_count; i++) {
+        pixel_buf[i * 2] = color >> 8;     // Старший байт
         pixel_buf[i * 2 + 1] = color & 0xFF; // Младший байт
     }
 
     send_data(spi, pixel_buf, buf_size);
-
     free(pixel_buf);
 }
-
 
 void fill_screen(spi_device_handle_t spi, uint16_t color) {
     send_command(spi, CMD_COLUMN);

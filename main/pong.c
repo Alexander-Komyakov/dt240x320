@@ -14,12 +14,12 @@ void game_pong(spi_device_handle_t spi) {
 //	fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
 //	uint8_t ball_speed = 2;
 
-	uint8_t speed = 1;
+	uint8_t speed = 2;
     int8_t bot_speed = 1; // Скорость движения бота - за каждое движение +1 пиксель
 
 	int received_button = 0;
-	int old_coordinates = player.y;
-//	int old_bot_coordinates = bot.y;
+	uint16_t old_coordinates = player.y;
+	uint16_t old_bot_coordinates = bot.y;
 
 	while (1) {
         if (xStreamBufferReceive(xStreamBuffer, &received_button, sizeof(received_button), 0) > 0) {
@@ -34,6 +34,7 @@ void game_pong(spi_device_handle_t spi) {
 			player.y = ((uint16_t) (player.y + speed) <= speed) ? 0 : (player.y > DISPLAY_HEIGHT - player.height) ? DISPLAY_HEIGHT - player.height : player.y;
 			fill_rect(spi, player.x, player.y, player.width, player.height, player.color);
 
+
 			if (player.y < old_coordinates) {
 				fill_rect(spi, player.x, player.y + player.height, player.width, old_coordinates - player.y, 0x0000);
 			}
@@ -41,7 +42,7 @@ void game_pong(spi_device_handle_t spi) {
 				fill_rect(spi, player.x, old_coordinates, player.width, player.y - old_coordinates, 0x0000);
 			}
 			old_coordinates = player.y;
-			}
+		}
 
 
 
