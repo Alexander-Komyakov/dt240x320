@@ -3,9 +3,9 @@
 void game_pong(spi_device_handle_t spi) {
     xStreamBuffer = xStreamBufferCreate(STREAM_BUF_SIZE, sizeof(int));
 
-    struct Player player = {30, 80, 30, 70, 0xFFFF}; // 0xFFFF - белый цвет
-    struct Player bot = {260, 80, 30, 70, 0xFFFF};
-    struct Player ball = {60, 110, 10, 10, 0xFFFF}; // При указанных позициях 60 по x - граница где мяч должен касаться прямоугольников
+    struct Player player = {10, 100, 10, 40, 0xFFFF}; // 0xFFFF - белый цвет
+    struct Player bot = {300, 100, 10, 40, 0xFFFF};
+    struct Player ball = {20, 115, 10, 10, 0xFFFF}; // При указанных позициях 60 по x - граница где мяч должен касаться прямоугольников
 
     fill_screen(spi, 0x0000);
     fill_rect(spi, player.x, player.y, player.width, player.height, player.color);
