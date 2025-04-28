@@ -23,6 +23,7 @@ restart_game:
     uint8_t bot_score = 0;
     bool game_over = false;
     int received_button = 0;
+    uint8_t level = 0;
 
     // Настройки скорости
     uint8_t speed = 3;
@@ -154,6 +155,49 @@ restart_game:
             draw_text(spi, DISPLAY_WIDTH/2 - 30, DISPLAY_HEIGHT/2 - 10, score_text, 0xFFFF);
             vTaskDelay(1000 / portTICK_PERIOD_MS);
 
+            // Проверка на победу
+            if (player_score == 10 || player_score == 25 || player_score == 40 ||
+                bot_score == 10 || bot_score == 25 || bot_score == 40) {
+                fill_screen(spi, 0x0000);
+                // Поражение
+                if (bot_score > player_score) {
+                    draw_text(spi, DISPLAY_WIDTH/2 - 40, DISPLAY_HEIGHT/2 - 20, "You are lose", 0xF800);
+                    draw_text(spi, DISPLAY_WIDTH/2 - 100, DISPLAY_HEIGHT/2 + 10, "Press RED/A Button to restart game", 0xFFFF);
+                    // Ожидание нажатия кнопки RED
+                    while (1) {
+                        if (gpio_get_level(BUTTON_RED) == 0) {
+                            vTaskDelay(200 / portTICK_PERIOD_MS);
+                            if (gpio_get_level(BUTTON_RED) == 0) {
+                                vStreamBufferDelete(xStreamBuffer);
+                                goto restart_game;
+                            }
+                        }
+                        vTaskDelay(50 / portTICK_PERIOD_MS);
+                    }
+                }
+                else if (player_score == 10 && level == 0) {
+                    draw_text(spi, DISPLAY_WIDTH/2 - 40, DISPLAY_HEIGHT/2 - 20, "Medium level", 0x07E0);
+                    vTaskDelay(1000 / portTICK_PERIOD_MS);
+                    bot_reaction_speed = 3;
+                    bot_attack_speed = 3;
+                    level = 1;
+                } else if (player_score == 25 && level == 1) {
+                    draw_text(spi, DISPLAY_WIDTH/2 - 10, DISPLAY_HEIGHT/2 - 20, "Hard Level", 0x07E0);
+                    vTaskDelay(1000 / portTICK_PERIOD_MS);
+                    speed = 4;
+                    bot_reaction_speed = 4;
+                    bot_attack_speed = 4;
+                    level = 2;
+                } else if (player_score == 40 && level == 2) {
+                    draw_text(spi, DISPLAY_WIDTH/2 - 10, DISPLAY_HEIGHT/2 - 20, "Very Hard Level", 0x07E0);
+                    vTaskDelay(1000 / portTICK_PERIOD_MS);
+                    speed = 5;
+                    bot_reaction_speed = 5;
+                    bot_attack_speed = 5;
+                    level = 3;
+                }
+            }
+
             // Сброс позиций
             ball.x = DISPLAY_WIDTH/2;
             ball.y = DISPLAY_HEIGHT/2;
@@ -178,29 +222,6 @@ restart_game:
             continue;
         }
 
-        // Проверка на победу
-        if (player_score >= 10 || bot_score >= 10) {
-            fill_screen(spi, 0x0000);
-            if (player_score >= 10) {
-                draw_text(spi, DISPLAY_WIDTH/2 - 40, DISPLAY_HEIGHT/2 - 20, "Povezlo, Povezlo...!", 0x07E0);
-            } else {
-                draw_text(spi, DISPLAY_WIDTH/2 - 10, DISPLAY_HEIGHT/2 - 20, "SOSAL!", 0xF800);
-            }
-            
-            draw_text(spi, DISPLAY_WIDTH/2 - 100, DISPLAY_HEIGHT/2 + 10, "Press RED/A Button to restart game", 0xFFFF);
-            
-            // Ожидание нажатия кнопки RED
-            while (1) {
-                if (gpio_get_level(BUTTON_RED) == 0) {
-                    vTaskDelay(200 / portTICK_PERIOD_MS);
-                    if (gpio_get_level(BUTTON_RED) == 0) {
-                        vStreamBufferDelete(xStreamBuffer);
-                        goto restart_game;
-                    }
-                }
-                vTaskDelay(50 / portTICK_PERIOD_MS);
-            }
-        }
 
         // Отрисовка мяча
         fill_rect(spi, prev_ball_x, prev_ball_y, ball.width, ball.height, 0x0000);
