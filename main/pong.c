@@ -59,15 +59,14 @@ restart_game:
     while (!game_over) {
         // Обработка ввода игрока
         if (xStreamBufferReceive(xStreamBuffer, &received_button, sizeof(received_button), 0) > 0) {
-            // Полностью стираем предыдущую позицию
-            fill_rect(spi, player.x, prev_player_y, player.width, player.height, 0x0000);
-            
             if (received_button == BUTTON_UP) {
                 player.y = (player.y > speed) ? player.y - speed : 0;
+                fill_rect(spi, player.x, player.y + player.height, player.width, prev_player_y - player.y, 0x0000);
             }
             else if (received_button == BUTTON_DOWN) {
                 player.y = (player.y < DISPLAY_HEIGHT - player.height - speed) ? 
                           player.y + speed : DISPLAY_HEIGHT - player.height;
+                fill_rect(spi, player.x, prev_player_y, player.width, player.y - prev_player_y, 0x0000);
             }
 
             // Рисуем новую позицию
@@ -100,10 +99,20 @@ restart_game:
             }
         }
 
-        // Отрисовка бота с полной очисткой
-        fill_rect(spi, bot.x, prev_bot_y, bot.width, bot.height, 0x0000);
-        fill_rect(spi, bot.x, bot.y, bot.width, bot.height, bot.color);
-        prev_bot_y = bot.y;
+        // Отрисовка бота с частичной очисткой
+        if (prev_bot_y != bot.y) {
+            if (bot.y > prev_bot_y) {
+                // Движение вниз - стираем верхнюю часть
+                fill_rect(spi, bot.x, prev_bot_y, bot.width, bot.y - prev_bot_y, 0x0000);
+            } else {
+                // Движение вверх - стираем нижнюю часть
+                fill_rect(spi, bot.x, bot.y + bot.height, bot.width, prev_bot_y - bot.y, 0x0000);
+            }
+            
+            // Рисуем новую позицию
+            fill_rect(spi, bot.x, bot.y, bot.width, bot.height, bot.color);
+            prev_bot_y = bot.y;
+        }
 
         // Движение мяча
         prev_ball_x = ball.x;
