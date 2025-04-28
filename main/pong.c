@@ -94,10 +94,6 @@ bool is_colliding(struct Player a, struct Player b) {
 }
 
 void game_pong(spi_device_handle_t spi) {
-    // Настройка кнопки перезапуска
-    gpio_set_direction(BUTTON_RED, GPIO_MODE_INPUT);
-    gpio_set_pull_mode(BUTTON_RED, GPIO_PULLUP_ONLY);
-
 restart_game:
     xStreamBuffer = xStreamBufferCreate(STREAM_BUF_SIZE, sizeof(int));
 
@@ -136,6 +132,15 @@ restart_game:
     uint16_t prev_ball_x = ball.x;
     uint16_t prev_ball_y = ball.y;
 
+    // Начинаем игру с шарика в сторону бота
+    int16_t ball_target_y = -(ball.y + (ball.height/2));
+    int16_t bot_center;
+    int16_t distance_to_ball;
+    uint8_t current_bot_speed;
+    int16_t predicted_y;
+    int hit_pos;
+    char score_text[32];
+
     while (!game_over) {
         // Обработка ввода игрока
         if (xStreamBufferReceive(xStreamBuffer, &received_button, sizeof(received_button), 0) > 0) {
@@ -156,12 +161,12 @@ restart_game:
         }
 
         // Улучшенный ИИ бота
-        int16_t ball_target_y = ball.y + (ball.height/2);
-        int16_t bot_center = bot.y + (bot.height/2);
-        int16_t distance_to_ball = abs(ball_target_y - bot_center);
+        ball_target_y = ball.y + (ball.height/2);
+        bot_center = bot.y + (bot.height/2);
+        distance_to_ball = abs(ball_target_y - bot_center);
 
         if (ball_speed_x > 0) {
-            uint8_t current_bot_speed = (distance_to_ball > 20) ? bot_attack_speed : bot_reaction_speed;
+            current_bot_speed = (distance_to_ball > 20) ? bot_attack_speed : bot_reaction_speed;
             
             if (ball_target_y < bot_center - 5) {
                 bot.y = (bot.y > current_bot_speed) ? bot.y - current_bot_speed : 0;
@@ -173,7 +178,7 @@ restart_game:
             
             // Предсказание траектории
             if (distance_to_ball < 15 && ball.x > DISPLAY_WIDTH/2) {
-                int16_t predicted_y = ball.y + (ball_speed_y * (DISPLAY_WIDTH - ball.x) / ball_speed_x);
+                predicted_y = ball.y + (ball_speed_y * (DISPLAY_WIDTH - ball.x) / ball_speed_x);
                 if (predicted_y > 0 && predicted_y < DISPLAY_HEIGHT - bot.height) {
                     ball_target_y = predicted_y;
                 }
@@ -195,7 +200,7 @@ restart_game:
         if (is_colliding(player, ball)) {
             ball.x = player.x + player.width;
             ball_speed_x = abs(ball_speed_x);
-            int hit_pos = (ball.y + ball.height/2) - (player.y + player.height/2);
+            hit_pos = (ball.y + ball.height/2) - (player.y + player.height/2);
             ball_speed_y = hit_pos / 3;
             if (ball_speed_y > 4) ball_speed_y = 4;
             if (ball_speed_y < -4) ball_speed_y = -4;
@@ -204,7 +209,7 @@ restart_game:
         if (is_colliding(bot, ball)) {
             ball.x = bot.x - ball.width;
             ball_speed_x = -abs(ball_speed_x);
-            int hit_pos = (ball.y + ball.height/2) - (bot.y + bot.height/2);
+            hit_pos = (ball.y + ball.height/2) - (bot.y + bot.height/2);
             ball_speed_y = hit_pos / 2;
             if (ball_speed_y > 5) ball_speed_y = 5;
             if (ball_speed_y < -5) ball_speed_y = -5;
@@ -220,7 +225,6 @@ restart_game:
             if (ball.x <= 0) bot_score++;
             else player_score++;
 
-            char score_text[32];
             snprintf(score_text, sizeof(score_text), "SCORE %d:%d", player_score, bot_score);
             fill_screen(spi, 0x0000);
             draw_text(spi, DISPLAY_WIDTH/2 - 30, DISPLAY_HEIGHT/2 - 10, score_text, 0xFFFF);
