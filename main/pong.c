@@ -108,11 +108,11 @@ restart_game:
     int received_button = 0;
 
     // Настройки скорости
-    uint8_t speed = 2;
+    uint8_t speed = 3;
     int8_t ball_speed_x = 3;
     int8_t ball_speed_y = 3;
-    uint8_t bot_reaction_speed = 3;
-    uint8_t bot_attack_speed = 5;
+    uint8_t bot_reaction_speed = 2;
+    uint8_t bot_attack_speed = 2;
 
     // Переменные для частичной перерисовки
     uint16_t prev_player_y = player.y;
