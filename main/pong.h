@@ -7,6 +7,8 @@
 #include "button.h"
 #include "display.h"
 #include "image_structure.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 
 void game_pong(spi_device_handle_t spi);
@@ -19,4 +21,3 @@ struct Player
     uint16_t height;
     uint16_t color;
 };
-
