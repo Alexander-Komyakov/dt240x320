@@ -240,7 +240,7 @@ restart_game:
             prev_ball_x = ball.x;
             prev_ball_y = ball.y;
 
-            ball_speed_x = (ball.x <= 0) ? 2 : -2;
+            ball_speed_x = (ball.x <= 0) ? 2 : 2;
             ball_speed_y = (rand() % 5) - 2;
 
             // Полная перерисовка
