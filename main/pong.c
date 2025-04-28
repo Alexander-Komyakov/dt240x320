@@ -107,12 +107,6 @@ restart_game:
     bool game_over = false;
     int received_button = 0;
 
-    // Первоначальная отрисовка
-    fill_screen(spi, 0x0000);
-    fill_rect(spi, player.x, player.y, player.width, player.height, player.color);
-    fill_rect(spi, bot.x, bot.y, bot.width, bot.height, bot.color);
-    fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
-
     // Настройки скорости
     uint8_t speed = 2;
     int8_t ball_speed_x = 3;
@@ -120,26 +114,30 @@ restart_game:
     uint8_t bot_reaction_speed = 3;
     uint8_t bot_attack_speed = 5;
 
-//    uint8_t speed = 3;
-//    int8_t ball_speed_x = 2;
-//    int8_t ball_speed_y = 2;
-//    uint8_t bot_reaction_speed = 3;
-//    uint8_t bot_attack_speed = 5;
-
     // Переменные для частичной перерисовки
     uint16_t prev_player_y = player.y;
     uint16_t prev_bot_y = bot.y;
     uint16_t prev_ball_x = ball.x;
     uint16_t prev_ball_y = ball.y;
 
-    // Начинаем игру с шарика в сторону бота
-    int16_t ball_target_y = -(ball.y + (ball.height/2));
+    // Переменные для ИИ бота
+    int16_t ball_target_y;
     int16_t bot_center;
     int16_t distance_to_ball;
     uint8_t current_bot_speed;
     int16_t predicted_y;
+
+    // Переменные для обработки столкновений
     int hit_pos;
+
+    // Переменная для отображения счета
     char score_text[32];
+
+    // Первоначальная отрисовка
+    fill_screen(spi, 0x0000);
+    fill_rect(spi, player.x, player.y, player.width, player.height, player.color);
+    fill_rect(spi, bot.x, bot.y, bot.width, bot.height, bot.color);
+    fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
 
     while (!game_over) {
         // Обработка ввода игрока
@@ -236,6 +234,12 @@ restart_game:
             player.y = DISPLAY_HEIGHT/2 - player.height/2;
             bot.y = DISPLAY_HEIGHT/2 - bot.height/2;
             
+            // Обновляем предыдущие позиции после сброса
+            prev_player_y = player.y;
+            prev_bot_y = bot.y;
+            prev_ball_x = ball.x;
+            prev_ball_y = ball.y;
+
             ball_speed_x = (ball.x <= 0) ? 2 : -2;
             ball_speed_y = (rand() % 5) - 2;
 
