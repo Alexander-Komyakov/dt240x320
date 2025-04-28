@@ -21,7 +21,6 @@ restart_game:
 
     uint8_t player_score = 0;
     uint8_t bot_score = 0;
-    bool game_over = false;
     int received_button = 0;
     uint8_t level = 0;
 
@@ -57,7 +56,7 @@ restart_game:
     fill_rect(spi, bot.x, bot.y, bot.width, bot.height, bot.color);
     fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
 
-    while (!game_over) {
+    while (1) {
         // Обработка ввода игрока
         if (xStreamBufferReceive(xStreamBuffer, &received_button, sizeof(received_button), 0) > 0) {
             if (received_button == BUTTON_UP) {
