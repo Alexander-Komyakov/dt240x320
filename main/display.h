@@ -8,7 +8,9 @@
 #include "freertos/stream_buffer.h"
 #include "esp_log.h"
 #include "image_structure.h"
+#include "pong_preview.h"
 #include "spi.h"
+
 
 #define DISPLAY_WIDTH 320
 #define DISPLAY_HEIGHT 240
@@ -39,3 +41,4 @@ void draw_pixel(spi_device_handle_t spi, uint16_t x, uint16_t y, uint16_t color)
 void vertical_scroll(spi_device_handle_t spi, uint16_t* tfa, uint16_t* vsa, uint16_t* bfa, uint16_t* ssa);
 void draw_image(spi_device_handle_t spi, const Image *my_image);
 void draw_image_background(spi_device_handle_t spi, const Image *my_image, const uint16_t *background);
+void draw_border(spi_device_handle_t spi, const Image *my_image, uint8_t border_size, uint16_t color);

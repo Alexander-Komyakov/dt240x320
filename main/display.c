@@ -1,6 +1,14 @@
 #include "display.h"
 #include "spi.h"
 
+void draw_border(spi_device_handle_t spi, const Image *my_image, uint8_t border_size, uint16_t color) {
+    uint16_t half_size = border_size / 2;
+    fill_rect(spi, my_image->x, 36, my_image->width, half_size, color);
+    fill_rect(spi, my_image->x, 100, my_image->width, half_size, color);
+    fill_rect(spi, my_image->x-half_size, my_image->y-half_size, half_size, my_image->height+border_size, color);
+    fill_rect(spi, my_image->x+my_image->width, my_image->y-half_size, half_size, my_image->height+border_size, color);
+}
+
 void draw_image(spi_device_handle_t spi, const Image *my_image) {
     send_command(spi, CMD_COLUMN);
     uint8_t col_data[4] = {my_image->x >> 8, my_image->x & 0xFF, (my_image->x - 1 + my_image->width) >> 8, (my_image->x - 1 + my_image->width) & 0xFF};

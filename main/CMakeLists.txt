@@ -4,4 +4,5 @@ idf_component_register(SRCS "main.c"
                        SRCS "font.c"
                        SRCS "spi.c"
                        SRCS "pong.c"
+                       SRCS "pong_preview.c"
                     INCLUDE_DIRS ".")
