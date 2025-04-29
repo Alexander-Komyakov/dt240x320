@@ -19,10 +19,12 @@ restart_game:
     struct Player bot = {DISPLAY_WIDTH - 20, DISPLAY_HEIGHT/2 - 20, 10, 40, 0xFFFF};
     struct Player ball = {DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2, 10, 10, 0xFFFF};
 
-    uint8_t player_score = 0;
-    uint8_t bot_score = 0;
+    uint16_t player_score = 0;
+    uint16_t bot_score = 0;
     int received_button = 0;
     uint8_t level = 0;
+    uint16_t p_text[4], b_text[4];
+    uint8_t p_pos = 0, b_pos = 0;
 
     // Настройки скорости
     uint8_t speed = 3;
@@ -46,9 +48,6 @@ restart_game:
 
     // Переменные для обработки столкновений
     int hit_pos;
-
-    // Переменная для отображения счета
-    char score_text[32];
 
     // Первоначальная отрисовка
     fill_screen(spi, 0x0000);
@@ -149,9 +148,24 @@ restart_game:
             if (ball.x <= 0) bot_score++;
             else player_score++;
 
-            snprintf(score_text, sizeof(score_text), "SCORE %d:%d", player_score, bot_score);
             fill_screen(spi, 0x0000);
-            draw_text(spi, DISPLAY_WIDTH/2 - 30, DISPLAY_HEIGHT/2 - 10, score_text, 0xFFFF);
+            draw_text(spi, DISPLAY_WIDTH/2 - 30, DISPLAY_HEIGHT/2 - 10, u"СЧЕТ ", 0xFFFF);
+
+            // Формируем текст для игрока
+            if (player_score >= 100) p_text[p_pos++] = u'0' + (player_score / 100);
+            if (player_score >= 10 || p_pos > 0) p_text[p_pos++] = u'0' + ((player_score / 10) % 10);
+            p_text[p_pos++] = u'0' + (player_score % 10);
+            p_text[p_pos] = 0;
+            
+            // Формируем текст для бота
+            if (bot_score >= 100) b_text[b_pos++] = u'0' + (bot_score / 100);
+            if (bot_score >= 10 || b_pos > 0) b_text[b_pos++] = u'0' + ((bot_score / 10) % 10);
+            b_text[b_pos++] = u'0' + (bot_score % 10);
+            b_text[b_pos] = 0;
+
+            draw_text(spi, DISPLAY_WIDTH/2 + 10, DISPLAY_HEIGHT/2 - 10, p_text, 0xFFFF);
+            draw_text(spi, DISPLAY_WIDTH/2 + 30, DISPLAY_HEIGHT/2 - 10, b_text, 0xFFFF);
+            p_pos = 0, b_pos = 0;
             vTaskDelay(1000 / portTICK_PERIOD_MS);
 
             // Проверка на победу
@@ -160,8 +174,8 @@ restart_game:
                 fill_screen(spi, 0x0000);
                 // Поражение
                 if (bot_score > player_score) {
-                    draw_text(spi, DISPLAY_WIDTH/2 - 40, DISPLAY_HEIGHT/2 - 20, "You are lose", 0xF800);
-                    draw_text(spi, DISPLAY_WIDTH/2 - 100, DISPLAY_HEIGHT/2 + 10, "Press RED/A Button to restart game", 0xFFFF);
+                    draw_text(spi, DISPLAY_WIDTH/2 - 40, DISPLAY_HEIGHT/2 - 20, u"ВЫ ПРОИГРАЛИ", 0xF800);
+                    draw_text(spi, DISPLAY_WIDTH/2 - 120, DISPLAY_HEIGHT/2 + 10, u"НАЖМИТЕ КРАСНУЮ КНОПКУ ДЛЯ ПЕРЕЗАПУСКА ИГРЫ", 0xFFFF);
                     // Ожидание нажатия кнопки RED
                     while (1) {
                         if (gpio_get_level(BUTTON_RED) == 0) {
@@ -175,20 +189,20 @@ restart_game:
                     }
                 }
                 else if (player_score == 10 && level == 0) {
-                    draw_text(spi, DISPLAY_WIDTH/2 - 40, DISPLAY_HEIGHT/2 - 20, "Medium level", 0x07E0);
+                    draw_text(spi, DISPLAY_WIDTH/2 - 40, DISPLAY_HEIGHT/2 - 20, u"СРЕДНЯЯ СЛОЖНОСТЬ", 0x07E0);
                     vTaskDelay(1000 / portTICK_PERIOD_MS);
                     bot_reaction_speed = 3;
                     bot_attack_speed = 3;
                     level = 1;
                 } else if (player_score == 25 && level == 1) {
-                    draw_text(spi, DISPLAY_WIDTH/2 - 10, DISPLAY_HEIGHT/2 - 20, "Hard Level", 0x07E0);
+                    draw_text(spi, DISPLAY_WIDTH/2 - 10, DISPLAY_HEIGHT/2 - 20, u"ВЫСОКАЯ СЛОЖНОСТЬ", 0x07E0);
                     vTaskDelay(1000 / portTICK_PERIOD_MS);
                     speed = 4;
                     bot_reaction_speed = 4;
                     bot_attack_speed = 4;
                     level = 2;
                 } else if (player_score == 40 && level == 2) {
-                    draw_text(spi, DISPLAY_WIDTH/2 - 10, DISPLAY_HEIGHT/2 - 20, "Very Hard Level", 0x07E0);
+                    draw_text(spi, DISPLAY_WIDTH/2 - 10, DISPLAY_HEIGHT/2 - 20, u"НЕВОЗМОЖНАЯ СЛОЖНОСТЬ", 0x07E0);
                     vTaskDelay(1000 / portTICK_PERIOD_MS);
                     speed = 5;
                     bot_reaction_speed = 5;
