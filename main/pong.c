@@ -195,14 +195,14 @@ restart_game:
                     bot_attack_speed = 3;
                     level = 1;
                 } else if (player_score == 25 && level == 1) {
-                    draw_text(spi, DISPLAY_WIDTH/2 - 10, DISPLAY_HEIGHT/2 - 20, u"ВЫСОКАЯ СЛОЖНОСТЬ", 0x07E0);
+                    draw_text(spi, DISPLAY_WIDTH/2 - 40, DISPLAY_HEIGHT/2 - 20, u"ВЫСОКАЯ СЛОЖНОСТЬ", 0x07E0);
                     vTaskDelay(1000 / portTICK_PERIOD_MS);
                     speed = 4;
                     bot_reaction_speed = 4;
                     bot_attack_speed = 4;
                     level = 2;
                 } else if (player_score == 40 && level == 2) {
-                    draw_text(spi, DISPLAY_WIDTH/2 - 10, DISPLAY_HEIGHT/2 - 20, u"НЕВОЗМОЖНАЯ СЛОЖНОСТЬ", 0x07E0);
+                    draw_text(spi, DISPLAY_WIDTH/2 - 50, DISPLAY_HEIGHT/2 - 20, u"НЕВОЗМОЖНАЯ СЛОЖНОСТЬ", 0x07E0);
                     vTaskDelay(1000 / portTICK_PERIOD_MS);
                     speed = 5;
                     bot_reaction_speed = 5;
