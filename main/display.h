@@ -37,6 +37,7 @@ void send_data(spi_device_handle_t spi, const uint8_t *data, size_t length);
 void reset_display(void);
 void fill_rect(spi_device_handle_t spi, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color);
 void fill_screen(spi_device_handle_t spi, uint16_t color);
+void fill_screen_gradient(spi_device_handle_t spi, uint16_t color_start, uint16_t color_end);
 void draw_pixel(spi_device_handle_t spi, uint16_t x, uint16_t y, uint16_t color);
 void vertical_scroll(spi_device_handle_t spi, uint16_t* tfa, uint16_t* vsa, uint16_t* bfa, uint16_t* ssa);
 void draw_image(spi_device_handle_t spi, const Image *my_image);

@@ -2,7 +2,7 @@
 
 
 uint8_t menu(spi_device_handle_t spi) {
-    fill_screen(spi, 0xFFFF);
+    fill_screen_gradient(spi, 0xBBBB, 0xFFFF);
 
     draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
     draw_image(spi, &image_pong_preview);

@@ -128,6 +128,53 @@ void fill_screen(spi_device_handle_t spi, uint16_t color) {
     free(pixel_buf);
 }
 
+void fill_screen_gradient(spi_device_handle_t spi, uint16_t color_start, uint16_t color_end) {
+    // Устанавливаем область заполнения (весь экран)
+    send_command(spi, CMD_COLUMN);
+    uint8_t col_data[4] = {0, 0, DISPLAY_WIDTH >> 8, DISPLAY_WIDTH & 0xFF};
+    send_data(spi, col_data, 4);
+    
+    send_command(spi, CMD_ROW);
+    uint8_t row_data[4] = {0, 0, DISPLAY_HEIGHT >> 8, DISPLAY_HEIGHT & 0xFF};
+    send_data(spi, row_data, 4);
+    
+    send_command(spi, CMD_SET_PIXEL);
+
+    // Разбираем начальный и конечный цвета на компоненты
+    uint8_t r1 = (color_start >> 11) & 0x1F;
+    uint8_t g1 = (color_start >> 5) & 0x3F;
+    uint8_t b1 = color_start & 0x1F;
+    
+    uint8_t r2 = (color_end >> 11) & 0x1F;
+    uint8_t g2 = (color_end >> 5) & 0x3F;
+    uint8_t b2 = color_end & 0x1F;
+
+    // Выделяем буфер для всех пикселей
+    uint32_t buf_size = DISPLAY_WIDTH * DISPLAY_HEIGHT * 2;
+    uint8_t *pixel_buf = heap_caps_malloc(buf_size, MALLOC_CAP_DMA);
+
+    // Заполняем буфер градиентом
+    for (int y = 0; y < DISPLAY_HEIGHT; y++) {
+        // Вычисляем коэффициенты интерполяции для текущей строки
+        float ratio = (float)y / (DISPLAY_HEIGHT - 1);
+        uint8_t r = r1 + (r2 - r1) * ratio;
+        uint8_t g = g1 + (g2 - g1) * ratio;
+        uint8_t b = b1 + (b2 - b1) * ratio;
+        
+        // Формируем цвет для всей строки
+        uint16_t line_color = (r << 11) | (g << 5) | b;
+        
+        // Заполняем строку в буфере
+        for (int x = 0; x < DISPLAY_WIDTH; x++) {
+            int idx = (y * DISPLAY_WIDTH + x) * 2;
+            pixel_buf[idx] = line_color >> 8;
+            pixel_buf[idx + 1] = line_color & 0xFF;
+        }
+    }
+
+    send_data(spi, pixel_buf, buf_size);
+    free(pixel_buf);
+}
 
 void draw_pixel(spi_device_handle_t spi, uint16_t x, uint16_t y, uint16_t color) {
     if (x >= DISPLAY_WIDTH || y >= DISPLAY_HEIGHT) return;
