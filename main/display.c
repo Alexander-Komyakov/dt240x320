@@ -3,8 +3,8 @@
 
 void draw_border(spi_device_handle_t spi, const Image *my_image, uint8_t border_size, uint16_t color) {
     uint16_t half_size = border_size / 2;
-    fill_rect(spi, my_image->x, 36, my_image->width, half_size, color);
-    fill_rect(spi, my_image->x, 100, my_image->width, half_size, color);
+    fill_rect(spi, my_image->x, my_image->y-half_size, my_image->width, half_size, color);
+    fill_rect(spi, my_image->x, my_image->y+my_image->height, my_image->width, half_size, color);
     fill_rect(spi, my_image->x-half_size, my_image->y-half_size, half_size, my_image->height+border_size, color);
     fill_rect(spi, my_image->x+my_image->width, my_image->y-half_size, half_size, my_image->height+border_size, color);
 }

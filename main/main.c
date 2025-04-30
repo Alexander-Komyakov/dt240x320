@@ -22,20 +22,27 @@ void app_main(void)
     fill_screen(spi, 0xFFFF);
 
     draw_border(spi, &image_pong_preview, 8, 0xAAAA);
-
     draw_image(spi, &image_pong_preview);
+
     image_pong_preview.x = 127;
     draw_image(spi, &image_pong_preview);
-    image_pong_preview.x = 223;
+    draw_border(spi, &image_pong_preview, 8, 0xAAAA);
+
+    image_pong_preview.x = 224;
     draw_image(spi, &image_pong_preview);
+    draw_border(spi, &image_pong_preview, 8, 0xAAAA);
 
     image_pong_preview.y = 140;
     draw_image(spi, &image_pong_preview);
+    draw_border(spi, &image_pong_preview, 8, 0xAAAA);
+
     image_pong_preview.x = 127;
     draw_image(spi, &image_pong_preview);
-    image_pong_preview.x = 31;
+    draw_border(spi, &image_pong_preview, 8, 0xAAAA);
 
+    image_pong_preview.x = 30;
     draw_image(spi, &image_pong_preview);
+    draw_border(spi, &image_pong_preview, 8, 0xAAAA);
 
     vTaskDelay(10000 / portTICK_PERIOD_MS);
 

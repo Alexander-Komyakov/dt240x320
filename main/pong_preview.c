@@ -393,7 +393,7 @@ const uint16_t image_pong_preview_pixels[3900] = {
 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 
 };
 Image image_pong_preview = {
-    .x = 31,
+    .x = 30,
     .y = 40,
     .width = 65,
     .height = 60,
