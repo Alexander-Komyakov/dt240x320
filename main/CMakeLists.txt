@@ -6,4 +6,5 @@ idf_component_register(SRCS "main.c"
                        SRCS "spi.c"
                        SRCS "pong.c"
                        SRCS "pong_preview.c"
+                       SRCS "doodle_preview.c"
                     INCLUDE_DIRS ".")

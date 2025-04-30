@@ -8,7 +8,7 @@ uint8_t menu(spi_device_handle_t spi) {
     draw_image(spi, &image_pong_preview);
 
     image_pong_preview.x = 127;
-    draw_image(spi, &image_pong_preview);
+    draw_image(spi, &image_doodle_preview);
     draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
 
     image_pong_preview.x = 224;

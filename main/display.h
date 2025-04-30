@@ -9,6 +9,7 @@
 #include "esp_log.h"
 #include "image_structure.h"
 #include "pong_preview.h"
+#include "doodle_preview.h"
 #include "spi.h"
 
 
