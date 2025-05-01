@@ -1,6 +1,7 @@
 #include "pong.h"
 #include "font.h"
 
+bool game_paused = false;
 
 // Функция проверки столкновения
 bool is_colliding(struct Player a, struct Player b) {
@@ -55,7 +56,43 @@ restart_game:
     fill_rect(spi, bot.x, bot.y, bot.width, bot.height, bot.color);
     fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
 
+
     while (1) {
+        // Проверка нажатия белой кнопки для паузы/продолжения
+        if (gpio_get_level(BUTTON_WHITE) == 0) {
+            vTaskDelay(200 / portTICK_PERIOD_MS); // Дебаунс
+            if (gpio_get_level(BUTTON_WHITE) == 0) {
+                game_paused = !game_paused; // Переключаем состояние паузы
+                
+                if (game_paused) {
+                    // Отрисовка меню паузы
+                    fill_screen(spi, 0x0000);
+                    draw_text(spi, DISPLAY_WIDTH/2 - 10, DISPLAY_HEIGHT/2 - 20, 
+                             u"ПАУЗА", 0xFFFF);
+                    draw_text(spi, DISPLAY_WIDTH/2 - 115, DISPLAY_HEIGHT/2 + 30, 
+                             u"ЧТОБЫ ПРОДЛОЖИТЬ НАЖМИТЕ БЕЛУЮ КНОПКУ", 0xFFFF);
+                } else {
+                    // Восстановление игры - перерисовываем все объекты
+                    fill_screen(spi, 0x0000);
+                    fill_rect(spi, player.x, player.y, player.width, player.height, player.color);
+                    fill_rect(spi, bot.x, bot.y, bot.width, bot.height, bot.color);
+                    fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
+                }
+                
+                // Ждем отпускания кнопки
+                while (gpio_get_level(BUTTON_WHITE) == 0) {
+                    vTaskDelay(50 / portTICK_PERIOD_MS);
+                }
+            }
+        }
+
+        // Если игра на паузе - пропускаем основной игровой цикл
+        if (game_paused) {
+            vTaskDelay(100 / portTICK_PERIOD_MS);
+            continue;
+        }
+
+
         // Обработка ввода игрока
         if (xStreamBufferReceive(xStreamBuffer, &received_button, sizeof(received_button), 0) > 0) {
             if (received_button == BUTTON_UP) {
