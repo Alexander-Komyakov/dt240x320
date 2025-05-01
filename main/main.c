@@ -5,6 +5,7 @@
 #include "image_structure.h"
 #include "pong.h"
 #include "doodle.h"
+#include "arkanoid.h"
 #include "menu.h"
 
 
@@ -22,5 +23,6 @@ void app_main(void)
     uint8_t number_game = menu(spi);
     if (number_game == 0) game_pong(spi);
     else if (number_game == 1) game_doodle(spi);
+	else if (number_game == 2) game_arkanoid(spi);
 }
 
