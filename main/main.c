@@ -7,6 +7,7 @@
 #include "doodle.h"
 #include "arkanoid.h"
 #include "menu.h"
+#include "saves.h"
 
 
 void app_main(void)
@@ -16,11 +17,14 @@ void app_main(void)
     spi_device_handle_t spi;
     spi_init(&spi);
 
+    nvs_handle_t nvs_handle;
+    nvs_init(&nvs_handle);
+
     init_display(spi);
     init_gpio_button();
     // Создаем задачу для обработки нажатий
     xTaskCreate(button_task, "button_task", 2048, NULL, 1, NULL);
-    uint8_t number_game = menu(spi);
+    uint8_t number_game = menu(spi, nvs_handle);
     if (number_game == 0) game_pong(spi);
     else if (number_game == 1) game_doodle(spi);
 	else if (number_game == 2) game_arkanoid(spi);

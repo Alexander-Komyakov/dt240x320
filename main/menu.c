@@ -1,8 +1,10 @@
 #include "menu.h"
 
 
-uint8_t menu(spi_device_handle_t spi) {
+uint8_t menu(spi_device_handle_t spi, nvs_handle_t nvs_handle) {
     fill_screen_gradient(spi, 0xBBBB, 0xFFFF);
+
+    uint8_t current_game = nvs_load_uint8_t(nvs_handle, "menu");
 
     draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
     draw_image(spi, &image_pong_preview);
@@ -25,8 +27,28 @@ uint8_t menu(spi_device_handle_t spi) {
 
     image_pong_preview.x = 30;
     draw_image(spi, &image_pong_preview);
-    draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_GAME_COLOR);
+    draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
 
+    if (current_game == 0) {
+        image_pong_preview.x = 30;
+        image_pong_preview.y = 40;
+    } else if (current_game == 1) {
+        image_pong_preview.x = 127;
+        image_pong_preview.y = 40;
+    } else if (current_game == 2) {
+        image_pong_preview.x = 224;
+        image_pong_preview.y = 40;
+    } else if (current_game == 3) {
+        image_pong_preview.x = 30;
+        image_pong_preview.y = 140;
+    } else if (current_game == 4) {
+        image_pong_preview.x = 127;
+        image_pong_preview.y = 140;
+    } else if (current_game == 5) {
+        image_pong_preview.x = 224;
+        image_pong_preview.y = 140;
+    }
+    draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_GAME_COLOR);
     xStreamBuffer = xStreamBufferCreate(STREAM_BUF_SIZE, sizeof(int));
 
     int received_button = 0;
@@ -34,8 +56,9 @@ uint8_t menu(spi_device_handle_t spi) {
     uint32_t last_button_time = 0;
     int last_button = 99;
     uint32_t current_time;
-    uint8_t current_game = 3;
-    uint8_t old_current_game = 3;
+
+    uint8_t old_current_game = current_game;
+
     while (1) {
         // Обработка ввода игрока
         if (xStreamBufferReceive(xStreamBuffer, &received_button, sizeof(received_button), 0) > 0) {
@@ -50,27 +73,28 @@ uint8_t menu(spi_device_handle_t spi) {
                         draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
                         image_pong_preview.y = 40;
                     }
-                 } else if (received_button == BUTTON_DOWN) {
+                } else if (received_button == BUTTON_DOWN) {
                     if (current_game <= 2) {
                         current_game += 3;
                         draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
                         image_pong_preview.y = 140;
                     }
-                 } else if (received_button == BUTTON_RIGHT) {
-                     if (current_game != 2 && current_game != 5) {
-                         current_game += 1;
-                         draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
-                         image_pong_preview.x += 97;
-                     }
-                 } else if (received_button == BUTTON_LEFT) {
-                     if (current_game != 0 && current_game != 3) {
-                         current_game -= 1;
-                         draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
-                         image_pong_preview.x -= 97;
-                     }
-                 } else {
-                     return current_game;
-                 }
+                } else if (received_button == BUTTON_RIGHT) {
+                    if (current_game != 2 && current_game != 5) {
+                        current_game += 1;
+                        draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
+                        image_pong_preview.x += 97;
+                    }
+                } else if (received_button == BUTTON_LEFT) {
+                    if (current_game != 0 && current_game != 3) {
+                        current_game -= 1;
+                        draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
+                        image_pong_preview.x -= 97;
+                    }
+                } else {
+                    nvs_save_uint8_t(nvs_handle, current_game, "menu");
+                    return current_game;
+                }
                 draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_GAME_COLOR);
                 old_current_game = current_game;
             }
