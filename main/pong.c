@@ -70,7 +70,7 @@ restart_game:
                     draw_text(spi, DISPLAY_WIDTH/2 - 10, DISPLAY_HEIGHT/2 - 20, 
                              u"ПАУЗА", 0xFFFF);
                     draw_text(spi, DISPLAY_WIDTH/2 - 115, DISPLAY_HEIGHT/2 + 30, 
-                             u"ЧТОБЫ ПРОДЛОЖИТЬ НАЖМИТЕ БЕЛУЮ КНОПКУ", 0xFFFF);
+                             u"ЧТОБЫ ПРОДОЛЖИТЬ НАЖМИТЕ БЕЛУЮ КНОПКУ", 0xFFFF);
                 } else {
                     // Восстановление игры - перерисовываем все объекты
                     fill_screen(spi, 0x0000);

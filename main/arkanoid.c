@@ -151,6 +151,7 @@ void game_arkanoid(spi_device_handle_t spi) {
     uint8_t round = 1;
     bool ball_active = false;
     bool red_button_enabled = true;
+    bool game_paused = false;
 
     // Первый раунд - стандартное расположение кирпичей
     for (int row = 0; row < BRICK_ROWS; row++) {
@@ -175,6 +176,57 @@ void game_arkanoid(spi_device_handle_t spi) {
     draw_bricks(spi, bricks);
 
     while (1) {
+        // Проверка нажатия белой кнопки для паузы/продолжения
+        if (gpio_get_level(BUTTON_WHITE) == 0) {
+            vTaskDelay(200 / portTICK_PERIOD_MS); // Дебаунс
+            if (gpio_get_level(BUTTON_WHITE) == 0) {
+                game_paused = !game_paused; // Переключаем состояние паузы
+                
+                if (game_paused) {
+                    // Отрисовка меню паузы
+                    fill_screen(spi, 0x0000);
+                    draw_text(spi, DISPLAY_WIDTH/2 - 10, DISPLAY_HEIGHT/2 - 20, 
+                             u"ПАУЗА", 0xFFFF);
+                    draw_text(spi, DISPLAY_WIDTH/2 - 115, DISPLAY_HEIGHT/2 + 30, 
+                             u"ЧТОБЫ ПРОДОЛЖИТЬ НАЖМИТЕ БЕЛУЮ КНОПКУ", 0xFFFF);
+                } else {
+                    // Восстановление игры - перерисовываем все объекты
+                    fill_screen(spi, 0x0000);
+                    fill_rect(spi, player.x, player.y, player.width, player.height, player.color);
+                    fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
+                    draw_bricks(spi, bricks);
+                }
+                
+                // Ждем отпускания кнопки
+                while (gpio_get_level(BUTTON_WHITE) == 0) {
+                    vTaskDelay(50 / portTICK_PERIOD_MS);
+                }
+            }
+        }
+
+        // Проверка нажатия желтой кнопки для автозавершения раунда
+        if (gpio_get_level(BUTTON_YELLOW) == 0) {
+            vTaskDelay(200 / portTICK_PERIOD_MS); // Дебаунс
+            if (gpio_get_level(BUTTON_YELLOW) == 0) {
+                // Деактивируем все кирпичи
+                for (int row = 0; row < BRICK_ROWS; row++) {
+                    for (int col = 0; col < BRICK_COLS; col++) {
+                        bricks[row][col].active = false;
+                    }
+                }
+                // Ждем отпускания кнопки
+                while (gpio_get_level(BUTTON_YELLOW) == 0) {
+                    vTaskDelay(50 / portTICK_PERIOD_MS);
+                }
+            }
+        }
+
+        // Если игра на паузе - пропускаем основной игровой цикл
+        if (game_paused) {
+            vTaskDelay(100 / portTICK_PERIOD_MS);
+            continue;
+        }
+
         if (xStreamBufferReceive(xStreamBuffer, &received_button, sizeof(received_button), 0) > 0) {
             if (received_button == BUTTON_LEFT) {
                 player.x = (player.x > speed) ? player.x - speed : 0;
@@ -312,15 +364,11 @@ void game_arkanoid(spi_device_handle_t spi) {
                     show_round_screen(spi, round, lives, base_speed);
                     
                     player.x = DISPLAY_WIDTH/2 - 20;
-//                    ball.x = DISPLAY_WIDTH/2;
-//                    ball.y = player.y - ball.height;
-
                     ball.x = player.x + player.width/2 - ball.width/2;
                     ball.y = player.y - ball.height;
                     prev_ball_x = ball.x;
                     prev_ball_y = ball.y;
                     fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
-
 
                     ball_speed_x = 0;
                     ball_speed_y = 0;
