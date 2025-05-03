@@ -10,6 +10,7 @@
 #include "image_structure.h"
 #include "pong_preview.h"
 #include "doodle_preview.h"
+#include "arkanoid_preview.h"
 #include "spi.h"
 
 

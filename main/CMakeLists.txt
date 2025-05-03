@@ -8,5 +8,6 @@ idf_component_register(SRCS "main.c"
                        SRCS "doodle.c"
                        SRCS "pong_preview.c"
                        SRCS "doodle_preview.c"
+                       SRCS "arkanoid_preview.c"
                        SRCS "arkanoid.c"
                     INCLUDE_DIRS ".")
