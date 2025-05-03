@@ -9,15 +9,39 @@
 #include "image_structure.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
+#include "font.h"
 
+// Константы игры
+#define BRICK_ROWS 5
+#define BRICK_COLS 10
+#define BRICK_WIDTH 30
+#define BRICK_HEIGHT 10
+#define BRICK_MARGIN 2
+#define BRICK_TOP_MARGIN 30
+#define SPEED_INCREASE_INTERVAL 15
+#define MIN_DISTANCE_FROM_BOTTOM 30
 
-void game_arkanoid(spi_device_handle_t spi);
-
-struct Player_arkanoid
-{
-	int16_t x;
-	uint16_t y;
+// Структуры
+typedef struct {
+    int16_t x;
+    uint16_t y;
     uint16_t width;
     uint16_t height;
     uint16_t color;
-};
+} GameObject;
+
+typedef struct {
+    uint16_t x, y;
+    uint16_t width, height;
+    uint16_t color;
+    bool active;
+} Brick;
+
+// Прототипы функций
+void game_arkanoid(spi_device_handle_t spi);
+void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]);
+void draw_bricks(spi_device_handle_t spi, Brick bricks[BRICK_ROWS][BRICK_COLS]);
+bool all_bricks_destroyed(Brick bricks[BRICK_ROWS][BRICK_COLS]);
+void show_round_screen(spi_device_handle_t spi, uint8_t round, uint8_t lives, float speed);
+bool check_collision(GameObject a, GameObject b);
