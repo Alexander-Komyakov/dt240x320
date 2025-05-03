@@ -13,16 +13,27 @@
 #include "font.h"
 
 // Константы игры
-#define BRICK_ROWS 5
-#define BRICK_COLS 10
-#define BRICK_WIDTH 30
-#define BRICK_HEIGHT 10
+#define BRICK_ROWS 8       // Увеличили для сложных фигур
+#define BRICK_COLS 12
+#define BRICK_WIDTH 24
+#define BRICK_HEIGHT 8
 #define BRICK_MARGIN 2
 #define BRICK_TOP_MARGIN 30
 #define SPEED_INCREASE_INTERVAL 15
 #define MIN_DISTANCE_FROM_BOTTOM 30
 
-// Структуры
+// Типы фигур
+typedef enum {
+    SHAPE_HORIZONTAL,
+    SHAPE_VERTICAL,
+    SHAPE_SQUARE,
+    SHAPE_SNAKE,
+    SHAPE_SPIRAL,
+    SHAPE_SNOWFLAKE,
+    SHAPE_TOTAL_COUNT
+} ShapeType;
+
+// Структуры (остаются без изменений)
 typedef struct {
     int16_t x;
     uint16_t y;

@@ -1,7 +1,10 @@
 #include "arkanoid.h"
 
-// Добавляем массив цветов кирпичей
-const uint16_t brick_colors[BRICK_ROWS] = {0xF800, 0x07E0, 0x001F, 0xFFE0, 0xF81F};
+// Массив цветов кирпичей
+const uint16_t brick_colors[BRICK_ROWS] = {
+    0xF800, 0x07E0, 0x001F, 0xFFE0, 
+    0xF81F, 0x07FF, 0xAFE5, 0xFF07
+};
 
 static bool is_colliding(GameObject a, GameObject b) {
     return (a.x < b.x + b.width &&
@@ -10,38 +13,58 @@ static bool is_colliding(GameObject a, GameObject b) {
             a.y + a.height > b.y);
 }
 
+void print_bricks_matrix(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
+    printf("Матрица кирпичей:\n");
+    for (int row = 0; row < BRICK_ROWS; row++) {
+        for (int col = 0; col < BRICK_COLS; col++) {
+            printf("%c", bricks[row][col].active ? 'X' : '.');
+        }
+        printf("\n");
+    }
+}
+
 void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
-    // Очищаем все кирпичи
+    // Очистка поля
     for (int row = 0; row < BRICK_ROWS; row++) {
         for (int col = 0; col < BRICK_COLS; col++) {
             bricks[row][col].active = false;
         }
     }
-    
-    // Генерируем случайные фигуры
+
+    // Генерация 3-5 фигур
     int shapes = 3 + rand() % 3;
+    printf("\n=== Новый раунд ===\nГенерируем %d фигур:\n", shapes);
+    
     for (int s = 0; s < shapes; s++) {
-        int shape_type = rand() % 3;
-        int start_row = rand() % BRICK_ROWS;
-        int start_col = rand() % (BRICK_COLS - 2);
-        
+        int start_row = rand() % (BRICK_ROWS - 4);
+        int start_col = rand() % (BRICK_COLS - 4);
+        ShapeType shape_type = rand() % (SHAPE_TOTAL_COUNT - 1);
+
         switch (shape_type) {
-            case 0: {
-                int length = 3 + rand() % 3;
+            case SHAPE_HORIZONTAL: {
+                int length = 3 + rand() % 5;
+                printf("%d. Горизонтальная линия (длина %d) в [%d,%d]\n", 
+                      s+1, length, start_row, start_col);
                 for (int i = 0; i < length && (start_col + i) < BRICK_COLS; i++) {
                     bricks[start_row][start_col + i].active = true;
                 }
                 break;
             }
-            case 1: {
-                int height = 2 + rand() % 3;
+            
+            case SHAPE_VERTICAL: {
+                int height = 2 + rand() % 4;
+                printf("%d. Вертикальная линия (высота %d) в [%d,%d]\n",
+                      s+1, height, start_row, start_col);
                 for (int i = 0; i < height && (start_row + i) < BRICK_ROWS; i++) {
                     bricks[start_row + i][start_col].active = true;
                 }
                 break;
             }
-            case 2: {
-                int size = (rand() % 2) ? 2 : 3;
+            
+            case SHAPE_SQUARE: {
+                int size = 2 + rand() % 2;
+                printf("%d. Квадрат %dx%d в [%d,%d]\n",
+                      s+1, size, size, start_row, start_col);
                 for (int i = 0; i < size && (start_row + i) < BRICK_ROWS; i++) {
                     for (int j = 0; j < size && (start_col + j) < BRICK_COLS; j++) {
                         bricks[start_row + i][start_col + j].active = true;
@@ -49,21 +72,97 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
                 }
                 break;
             }
+            
+            case SHAPE_SNAKE: {
+                int length = 5 + rand() % 6;
+                printf("%d. Змейка (длина %d) в [%d,%d]\n",
+                      s+1, length, start_row, start_col);
+                int dir = rand() % 4;
+                int row = start_row, col = start_col;
+                
+                for (int i = 0; i < length; i++) {
+                    if (row >= 0 && row < BRICK_ROWS && col >= 0 && col < BRICK_COLS) {
+                        bricks[row][col].active = true;
+                        if (rand() % 10 < 3) dir = rand() % 4;
+                        
+                        switch (dir) {
+                            case 0: row--; break;
+                            case 1: col++; break;
+                            case 2: row++; break;
+                            case 3: col--; break;
+                        }
+                    }
+                }
+                break;
+            }
+            
+            case SHAPE_SPIRAL: {
+                int size = 3 + rand() % 3;
+                printf("%d. Спираль (размер %d) в [%d,%d]\n",
+                      s+1, size, start_row, start_col);
+                int row = start_row, col = start_col;
+                int dir = 1;
+                int steps = 1, step_count = 0;
+                
+                for (int i = 0; i < size*size; i++) {
+                    if (row >= 0 && row < BRICK_ROWS && col >= 0 && col < BRICK_COLS) {
+                        bricks[row][col].active = true;
+                    }
+                    
+                    switch (dir) {
+                        case 0: row--; break;
+                        case 1: col++; break;
+                        case 2: row++; break;
+                        case 3: col--; break;
+                    }
+                    
+                    if (++step_count == steps) {
+                        dir = (dir + 1) % 4;
+                        step_count = 0;
+                        if (dir % 2 == 0) steps++;
+                    }
+                }
+                break;
+            }
+            
+            case SHAPE_SNOWFLAKE: {
+                int arms = 3 + rand() % 4;
+                printf("%d. Снежинка (%d луча) в [%d,%d]\n",
+                      s+1, arms, start_row+2, start_col+2);
+                int center_row = start_row + 2;
+                int center_col = start_col + 2;
+                
+                for (int a = 0; a < arms; a++) {
+                    float angle = 2 * M_PI * a / arms;
+                    for (int r = 0; r < 3; r++) {
+                        int row = center_row + (int)(r * sin(angle));
+                        int col = center_col + (int)(r * cos(angle));
+                        
+                        if (row >= 0 && row < BRICK_ROWS && col >= 0 && col < BRICK_COLS) {
+                            bricks[row][col].active = true;
+                        }
+                    }
+                }
+                break;
+            }
+            
+            default:
+                printf("%d. Неизвестная фигура\n", s+1);
+                break;
         }
     }
-    
-    // Устанавливаем параметры кирпичей
+    printf("==================\n");
+    print_bricks_matrix(bricks);
+
+    // Установка параметров кирпичей
     for (int row = 0; row < BRICK_ROWS; row++) {
         for (int col = 0; col < BRICK_COLS; col++) {
             if (bricks[row][col].active) {
                 bricks[row][col].x = col * (BRICK_WIDTH + BRICK_MARGIN) + BRICK_MARGIN;
-                int max_y = DISPLAY_HEIGHT - MIN_DISTANCE_FROM_BOTTOM - BRICK_HEIGHT;
-                bricks[row][col].y = MIN_DISTANCE_FROM_BOTTOM + 
-                                    (row * (BRICK_HEIGHT + BRICK_MARGIN)) % 
-                                    (max_y - BRICK_TOP_MARGIN);
+                bricks[row][col].y = BRICK_TOP_MARGIN + row * (BRICK_HEIGHT + BRICK_MARGIN);
                 bricks[row][col].width = BRICK_WIDTH;
                 bricks[row][col].height = BRICK_HEIGHT;
-                bricks[row][col].color = brick_colors[row];
+                bricks[row][col].color = brick_colors[row % BRICK_ROWS];
             }
         }
     }
@@ -105,8 +204,11 @@ void show_round_screen(spi_device_handle_t spi, uint8_t round, uint8_t lives, fl
 }
 
 void game_arkanoid(spi_device_handle_t spi) {
+    unsigned int seed = xTaskGetTickCount();
+    printf("Инициализация генератора случайных чисел: seed=%u\n", seed);
+    srand(seed);
+    
     xStreamBuffer = xStreamBufferCreate(STREAM_BUF_SIZE, sizeof(int));
-    srand(xTaskGetTickCount());
     
     Brick bricks[BRICK_ROWS][BRICK_COLS];
     GameObject player = {DISPLAY_WIDTH/2 - 20, 230, 40, 10, 0xFFFF};
@@ -127,7 +229,7 @@ void game_arkanoid(spi_device_handle_t spi) {
     bool red_button_enabled = true;
     bool game_paused = false;
 
-    // Инициализация первого раунда
+    // Первый раунд - стандартное расположение
     for (int row = 0; row < BRICK_ROWS; row++) {
         for (int col = 0; col < BRICK_COLS; col++) {
             bricks[row][col].x = col * (BRICK_WIDTH + BRICK_MARGIN) + BRICK_MARGIN;
@@ -144,6 +246,7 @@ void game_arkanoid(spi_device_handle_t spi) {
     fill_rect(spi, player.x, player.y, player.width, player.height, player.color);
     fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
     draw_bricks(spi, bricks);
+
 
     while (1) {
         // Обработка паузы
