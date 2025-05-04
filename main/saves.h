@@ -27,6 +27,7 @@ void storage_task(void* arg);
 void save_nvs_u8(const char* key, uint8_t value);
 void save_nvs_u16(const char* key, uint16_t value);
 void save_nvs_u32(const char* key, uint32_t value);
+void save_nvs_str(const char* key, const char* value);
 uint8_t load_nvs_u8(const char* strnumber);
 uint16_t load_nvs_u16(const char* strnumber);
 uint32_t load_nvs_u32(const char* strnumber);
