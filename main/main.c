@@ -17,14 +17,12 @@ void app_main(void)
     spi_device_handle_t spi;
     spi_init(&spi);
 
-    nvs_handle_t nvs_handle;
-    nvs_init(&nvs_handle);
-
     init_display(spi);
     init_gpio_button();
     // Создаем задачу для обработки нажатий
     xTaskCreate(button_task, "button_task", 2048, NULL, 1, NULL);
-    uint8_t number_game = menu(spi, nvs_handle);
+    xTaskCreate(storage_task, "storage_task", 4096, NULL, 1, NULL);
+    uint8_t number_game = menu(spi);
     if (number_game == 0) game_pong(spi);
     else if (number_game == 1) game_doodle(spi);
 	else if (number_game == 2) game_arkanoid(spi);

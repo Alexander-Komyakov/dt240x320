@@ -9,4 +9,4 @@
 #define MENU_BORDER 8
 
 
-uint8_t menu(spi_device_handle_t spi, nvs_handle_t nvs_handle);
+uint8_t menu(spi_device_handle_t spi);
