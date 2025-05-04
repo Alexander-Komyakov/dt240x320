@@ -224,7 +224,8 @@ void game_arkanoid(spi_device_handle_t spi) {
     uint16_t prev_ball_x = ball.x;
     uint16_t prev_ball_y = ball.y;
     uint8_t lives = 5;
-    uint8_t round = load_nvs_u8("round");
+    uint8_t round = 1;
+//    uint8_t round = load_nvs_u8("round"); // сохранение
     bool ball_active = false;
     bool red_button_enabled = true;
     bool game_paused = false;
@@ -426,7 +427,7 @@ void game_arkanoid(spi_device_handle_t spi) {
             else {
                 if (all_bricks_destroyed(bricks)) {
                     round++;
-                    save_nvs_u8("round", round);
+//                    save_nvs_u8("round", round);  // сохранение
                     speed_hits = 0;
                     
                     generate_random_bricks(bricks);
