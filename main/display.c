@@ -1,6 +1,48 @@
 #include "display.h"
 #include "spi.h"
 
+
+void draw_image_part(spi_device_handle_t spi, const Image *my_image,
+                    uint16_t src_x, uint16_t src_y,
+                    uint16_t part_width, uint16_t part_height) {
+
+    // Установка области вывода по X (столбцы)
+    send_command(spi, CMD_COLUMN);
+    uint8_t col_data[4] = {
+        (my_image->x + src_x) >> 8,
+        (my_image->x + src_x) & 0xFF,
+        (my_image->x + src_x + part_width - 1) >> 8,
+        (my_image->x + src_x + part_width - 1) & 0xFF
+    };
+    send_data(spi, col_data, 4);
+
+    // Установка области вывода по Y (строки)
+    send_command(spi, CMD_ROW);
+    uint8_t row_data[4] = {
+        (my_image->y + src_y) >> 8,           // Старший байт начального Y
+        (my_image->y + src_y) & 0xFF,         // Младший байт начального Y
+        (my_image->y + src_y + part_height - 1) >> 8,  // Старший байт конечного Y
+        (my_image->y + src_y + part_height - 1) & 0xFF // Младший байт конечного Y
+    };
+    send_data(spi, row_data, 4);
+
+    send_command(spi, CMD_SET_PIXEL);
+
+    uint16_t *dma_buffer = heap_caps_malloc(part_width * part_height * sizeof(uint16_t), MALLOC_CAP_DMA);
+
+    // Построчное копирование с правильными смещениями
+    for (uint16_t y = 0; y < part_height; y++) {
+        uint32_t src_offset = (src_y + y) * my_image->width + src_x;
+        uint32_t dst_offset = y * part_width;
+        memcpy(dma_buffer + dst_offset,
+               my_image->pixels + src_offset,
+               part_width * sizeof(uint16_t));
+    }
+
+    send_data16b(spi, dma_buffer, part_width * part_height);
+    free(dma_buffer);
+}
+
 void draw_border(spi_device_handle_t spi, const Image *my_image, uint8_t border_size, uint16_t color) {
     uint16_t half_size = border_size / 2;
     fill_rect(spi, my_image->x, my_image->y-half_size, my_image->width, half_size, color);
