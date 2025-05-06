@@ -17,144 +17,121 @@ void print_bricks_matrix(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
     printf("Матрица кирпичей:\n");
     for (int row = 0; row < BRICK_ROWS; row++) {
         for (int col = 0; col < BRICK_COLS; col++) {
-            printf("%c", bricks[row][col].active ? 'X' : '.');
+            printf("%c", bricks[row][col].active ? (bricks[row][col].unbreakable ? '#' : 'X') : '.');
         }
         printf("\n");
     }
 }
+
 
 void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
     // Очистка поля
     for (int row = 0; row < BRICK_ROWS; row++) {
         for (int col = 0; col < BRICK_COLS; col++) {
             bricks[row][col].active = false;
+            bricks[row][col].unbreakable = false;
         }
     }
 
-    // Генерация 3-5 фигур
-    int shapes = 3 + rand() % 3;
+    // Генерация 1 фигуры (тестовый режим)
+    int shapes = 3;
     printf("\n=== Новый раунд ===\nГенерируем %d фигур:\n", shapes);
-    
+
+    // Сначала генерируем фигуры
     for (int s = 0; s < shapes; s++) {
-        int start_row = rand() % (BRICK_ROWS - 4);
-        int start_col = rand() % (BRICK_COLS - 4);
-        ShapeType shape_type = rand() % (SHAPE_TOTAL_COUNT - 1);
+        int start_row = rand() % (BRICK_ROWS - 6);
+        int start_col = rand() % (BRICK_COLS - 8);
+        ShapeType shape_type = rand() % SHAPE_TOTAL_COUNT;
 
         switch (shape_type) {
-            case SHAPE_HORIZONTAL: {
-                int length = 3 + rand() % 5;
-                printf("%d. Горизонтальная линия (длина %d) в [%d,%d]\n", 
+            case SHAPE_SNAKE: {
+                if (rand() % 2 == 0) {
+                    printf("%d. Змейка (классическая) в [%d,%d]\n", s+1, start_row, start_col);
+                    // Классическая змейка
+                    for (int col = start_col; col < start_col + 6 && col < BRICK_COLS; col++) {
+                        bricks[start_row][col].active = true;
+                    }
+                    for (int row = start_row + 1; row < start_row + 3 && row < BRICK_ROWS; row++) {
+                        bricks[row][start_col + 5].active = true;
+                    }
+                    for (int col = start_col + 5; col >= start_col && col >= 0; col--) {
+                        bricks[start_row + 2][col].active = true;
+                    }
+                    for (int row = start_row + 3; row < start_row + 5 && row < BRICK_ROWS; row++) {
+                        bricks[row][start_col].active = true;
+                    }
+                    for (int col = start_col; col < start_col + 3 && col < BRICK_COLS; col++) {
+                        bricks[start_row + 4][col].active = true;
+                    }
+                } else {
+                    printf("%d. Змейка (компактная) в [%d,%d]\n", s+1, start_row, start_col);
+                    // Компактная змейка
+                    int pattern[5][2] = {{0,0}, {0,1}, {1,1}, {1,2}, {2,2}};
+                    for (int i = 0; i < 5; i++) {
+                        int r = start_row + pattern[i][0];
+                        int c = start_col + pattern[i][1];
+                        if (r < BRICK_ROWS && c < BRICK_COLS) {
+                            bricks[r][c].active = true;
+                        }
+                    }
+                }
+                break;
+            }
+            case HORIZONTAL_LINE: {
+				int length = 4 + rand() % 4; // Случайная длина от 4 до 7
+			    printf("%d. Горизонтальная линия (длина %d) в [%d,%d]\n", 
+			          s+1, length, start_row, start_col);
+
+			    for (int i = 0; i < length; i++) {
+			        int r = start_row;
+			        int c = start_col + i;
+			        if (c < BRICK_COLS) {  // Проверка границ
+			            bricks[r][c].active = true;
+			        }
+			    }
+			    break;
+            }
+            case VERTICAL_LINE: {
+                int length = 4 + rand() % 4; // Случайная длина от 4 до 7
+                printf("%d. Вертикальная линия (длина %d) в [%d,%d]\n", 
                       s+1, length, start_row, start_col);
-                for (int i = 0; i < length && (start_col + i) < BRICK_COLS; i++) {
-                    bricks[start_row][start_col + i].active = true;
+
+                for (int i = 0; i < length; i++) {
+                    int r = start_row + i;
+                    int c = start_col;
+                    if (c < BRICK_ROWS) {  // Проверка границ
+                        bricks[r][c].active = true;
+                    }
                 }
                 break;
             }
-            
-            case SHAPE_VERTICAL: {
-                int height = 2 + rand() % 4;
-                printf("%d. Вертикальная линия (высота %d) в [%d,%d]\n",
-                      s+1, height, start_row, start_col);
-                for (int i = 0; i < height && (start_row + i) < BRICK_ROWS; i++) {
-                    bricks[start_row + i][start_col].active = true;
-                }
-                break;
-            }
-            
-            case SHAPE_SQUARE: {
-                int size = 2 + rand() % 2;
-                printf("%d. Квадрат %dx%d в [%d,%d]\n",
-                      s+1, size, size, start_row, start_col);
-                for (int i = 0; i < size && (start_row + i) < BRICK_ROWS; i++) {
-                    for (int j = 0; j < size && (start_col + j) < BRICK_COLS; j++) {
+            default: {
+                printf("%d. Случайный блок в [%d,%d]\n", s+1, start_row, start_col);
+                // Генерируем случайный блок 2x2
+                for (int i = 0; i < 2 && (start_row + i) < BRICK_ROWS; i++) {
+                    for (int j = 0; j < 2 && (start_col + j) < BRICK_COLS; j++) {
                         bricks[start_row + i][start_col + j].active = true;
                     }
                 }
                 break;
             }
-            
-            case SHAPE_SNAKE: {
-                int length = 5 + rand() % 6;
-                printf("%d. Змейка (длина %d) в [%d,%d]\n",
-                      s+1, length, start_row, start_col);
-                int dir = rand() % 4;
-                int row = start_row, col = start_col;
-                
-                for (int i = 0; i < length; i++) {
-                    if (row >= 0 && row < BRICK_ROWS && col >= 0 && col < BRICK_COLS) {
-                        bricks[row][col].active = true;
-                        if (rand() % 10 < 3) dir = rand() % 4;
-                        
-                        switch (dir) {
-                            case 0: row--; break;
-                            case 1: col++; break;
-                            case 2: row++; break;
-                            case 3: col--; break;
-                        }
-                    }
-                }
-                break;
-            }
-            
-            case SHAPE_SPIRAL: {
-                int size = 3 + rand() % 3;
-                printf("%d. Спираль (размер %d) в [%d,%d]\n",
-                      s+1, size, start_row, start_col);
-                int row = start_row, col = start_col;
-                int dir = 1;
-                int steps = 1, step_count = 0;
-                
-                for (int i = 0; i < size*size; i++) {
-                    if (row >= 0 && row < BRICK_ROWS && col >= 0 && col < BRICK_COLS) {
-                        bricks[row][col].active = true;
-                    }
-                    
-                    switch (dir) {
-                        case 0: row--; break;
-                        case 1: col++; break;
-                        case 2: row++; break;
-                        case 3: col--; break;
-                    }
-                    
-                    if (++step_count == steps) {
-                        dir = (dir + 1) % 4;
-                        step_count = 0;
-                        if (dir % 2 == 0) steps++;
-                    }
-                }
-                break;
-            }
-            
-            case SHAPE_SNOWFLAKE: {
-                int arms = 3 + rand() % 4;
-                printf("%d. Снежинка (%d луча) в [%d,%d]\n",
-                      s+1, arms, start_row+2, start_col+2);
-                int center_row = start_row + 2;
-                int center_col = start_col + 2;
-                
-                for (int a = 0; a < arms; a++) {
-                    float angle = 2 * M_PI * a / arms;
-                    for (int r = 0; r < 3; r++) {
-                        int row = center_row + (int)(r * sin(angle));
-                        int col = center_col + (int)(r * cos(angle));
-                        
-                        if (row >= 0 && row < BRICK_ROWS && col >= 0 && col < BRICK_COLS) {
-                            bricks[row][col].active = true;
-                        }
-                    }
-                }
-                break;
-            }
-            
-            default:
-                printf("%d. Неизвестная фигура\n", s+1);
-                break;
         }
     }
-    printf("==================\n");
-    print_bricks_matrix(bricks);
 
-    // Установка параметров кирпичей
+    // Теперь генерируем неразрушаемые блоки, ИСКЛЮЧАЯ активные фигуры
+    int unbreakable_count = (BRICK_ROWS * BRICK_COLS) * (0.1 + (rand() % 11) * 0.01);
+    for (int i = 0; i < unbreakable_count; i++) {
+        int row, col;
+        do {
+            row = rand() % BRICK_ROWS;
+            col = rand() % BRICK_COLS;
+        } while (bricks[row][col].active); // Повторяем, пока не найдём неактивный кирпич
+
+        bricks[row][col].active = true;
+        bricks[row][col].unbreakable = true;
+    }
+
+    // Установка параметров кирпичей (цвета и координаты)
     for (int row = 0; row < BRICK_ROWS; row++) {
         for (int col = 0; col < BRICK_COLS; col++) {
             if (bricks[row][col].active) {
@@ -162,11 +139,15 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
                 bricks[row][col].y = BRICK_TOP_MARGIN + row * (BRICK_HEIGHT + BRICK_MARGIN);
                 bricks[row][col].width = BRICK_WIDTH;
                 bricks[row][col].height = BRICK_HEIGHT;
-                bricks[row][col].color = brick_colors[row % BRICK_ROWS];
+                bricks[row][col].color = bricks[row][col].unbreakable ? 0x7BEF : brick_colors[row % BRICK_ROWS];
             }
         }
     }
+
+    printf("==================\n");
+    print_bricks_matrix(bricks);
 }
+
 
 void draw_bricks(spi_device_handle_t spi, Brick bricks[BRICK_ROWS][BRICK_COLS]) {
     for (int row = 0; row < BRICK_ROWS; row++) {
@@ -183,7 +164,7 @@ void draw_bricks(spi_device_handle_t spi, Brick bricks[BRICK_ROWS][BRICK_COLS]) 
 bool all_bricks_destroyed(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
     for (int row = 0; row < BRICK_ROWS; row++) {
         for (int col = 0; col < BRICK_COLS; col++) {
-            if (bricks[row][col].active) {
+            if (bricks[row][col].active && !bricks[row][col].unbreakable) {
                 return false;
             }
         }
@@ -225,7 +206,6 @@ void game_arkanoid(spi_device_handle_t spi) {
     uint16_t prev_ball_y = ball.y;
     uint8_t lives = 5;
     uint8_t round = 1;
-//    uint8_t round = load_nvs_u8("round"); // сохранение
     bool ball_active = false;
     bool red_button_enabled = true;
     bool game_paused = false;
@@ -239,6 +219,10 @@ void game_arkanoid(spi_device_handle_t spi) {
             bricks[row][col].height = BRICK_HEIGHT;
             bricks[row][col].color = brick_colors[row];
             bricks[row][col].active = true;
+            bricks[row][col].unbreakable = (col % 5 == 0);
+            if (bricks[row][col].unbreakable) {
+                bricks[row][col].color = 0x7BEF;
+            }
         }
     }
     
@@ -247,7 +231,6 @@ void game_arkanoid(spi_device_handle_t spi) {
     fill_rect(spi, player.x, player.y, player.width, player.height, player.color);
     fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
     draw_bricks(spi, bricks);
-
 
     while (1) {
         // Обработка паузы
@@ -281,7 +264,9 @@ void game_arkanoid(spi_device_handle_t spi) {
             if (gpio_get_level(BUTTON_YELLOW) == 0) {
                 for (int row = 0; row < BRICK_ROWS; row++) {
                     for (int col = 0; col < BRICK_COLS; col++) {
-                        bricks[row][col].active = false;
+                        if (!bricks[row][col].unbreakable) {
+                            bricks[row][col].active = false;
+                        }
                     }
                 }
                 while (gpio_get_level(BUTTON_YELLOW) == 0) {
@@ -343,7 +328,10 @@ void game_arkanoid(spi_device_handle_t spi) {
             ball.x += (int)ball_speed_x;
             ball.y += (int)ball_speed_y;
 
-            // Обработка столкновений
+
+
+            // Обработка столкновений с кирпичами
+            bool brick_hit = false;
             for (int row = 0; row < BRICK_ROWS; row++) {
                 for (int col = 0; col < BRICK_COLS; col++) {
                     if (bricks[row][col].active && 
@@ -354,21 +342,67 @@ void game_arkanoid(spi_device_handle_t spi) {
                             bricks[row][col].height, 
                             0})) {
                         
-                        bricks[row][col].active = false;
-                        fill_rect(spi, bricks[row][col].x, bricks[row][col].y, 
-                                 bricks[row][col].width, bricks[row][col].height, 
-                                 0x0000);
+                        brick_hit = true;
                         
-                        if (ball.x + ball.width < bricks[row][col].x + bricks[row][col].width/2) {
-                            ball_speed_x = -fabs(ball_speed_x);
-                        } else if (ball.x > bricks[row][col].x + bricks[row][col].width/2) {
-                            ball_speed_x = fabs(ball_speed_x);
+                        // Для неразбиваемых блоков только отскок + перерисовка
+                        if (bricks[row][col].unbreakable) {
+                            // Перерисовываем блок, чтобы избежать артефактов
+                            fill_rect(spi, bricks[row][col].x, bricks[row][col].y,
+                                     bricks[row][col].width, bricks[row][col].height,
+                                     bricks[row][col].color);
                         } else {
+                            // Обычные блоки - уничтожаем
+                            bricks[row][col].active = false;
+                            fill_rect(spi, bricks[row][col].x, bricks[row][col].y,
+                                     bricks[row][col].width, bricks[row][col].height,
+                                     0x0000);
+                        }
+                        
+                        // Улучшенное определение направления отскока
+                        float ball_center_x = ball.x + ball.width/2;
+                        float ball_center_y = ball.y + ball.height/2;
+                        float brick_center_x = bricks[row][col].x + bricks[row][col].width/2;
+                        float brick_center_y = bricks[row][col].y + bricks[row][col].height/2;
+                        
+                        float dx = ball_center_x - brick_center_x;
+                        float dy = ball_center_y - brick_center_y;
+                        
+                        // Корректировка позиции мяча перед отскоком
+                        if (fabs(dx) > fabs(dy)) {
+                            // Горизонтальное столкновение
+                            if (dx > 0) {
+                                ball.x = bricks[row][col].x + bricks[row][col].width;
+                            } else {
+                                ball.x = bricks[row][col].x - ball.width;
+                            }
+                            ball_speed_x = -ball_speed_x;
+                        } else {
+                            // Вертикальное столкновение
+                            if (dy > 0) {
+                                ball.y = bricks[row][col].y + bricks[row][col].height;
+                            } else {
+                                ball.y = bricks[row][col].y - ball.height;
+                            }
                             ball_speed_y = -ball_speed_y;
                         }
+                        
+                        // После обработки столкновения выходим из циклов
+                        goto collision_processed;
                     }
                 }
             }
+            collision_processed:
+
+            // Если было столкновение с кирпичом, перерисовываем мяч в новой позиции
+            if (brick_hit) {
+                fill_rect(spi, prev_ball_x, prev_ball_y, ball.width, ball.height, 0x0000);
+                fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
+                prev_ball_x = ball.x;
+                prev_ball_y = ball.y;
+                continue; // Пропускаем остальную обработку для этого кадра
+            }
+
+
 
             if (is_colliding(player, ball)) {
                 ball.y = player.y - ball.height;
@@ -427,7 +461,6 @@ void game_arkanoid(spi_device_handle_t spi) {
             else {
                 if (all_bricks_destroyed(bricks)) {
                     round++;
-//                    save_nvs_u8("round", round);  // сохранение
                     speed_hits = 0;
                     
                     generate_random_bricks(bricks);
