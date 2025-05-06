@@ -377,6 +377,29 @@ void game_arkanoid(spi_device_handle_t spi) {
                         float dx = ball_center_x - brick_center_x;
                         float dy = ball_center_y - brick_center_y;
                         
+//////////////////////////////////////////////////////  ПРОБЛЕМНАЯ ЧАСТЬ, НА ДОРАБОТКУ ///////////////////////////////////
+                        // Корректировка позиции мяча перед отскоком
+                        if (fabs(dx) > fabs(dy)) {
+                            // Горизонтальное столкновение
+                            if (dx > 0) {
+                                ball.x = bricks[row][col].x + bricks[row][col].width;
+                            } else {
+                                ball.x = bricks[row][col].x - ball.width;
+                            }
+                            ball_speed_x = -ball_speed_x;
+                        } else {
+                            // Вертикальное столкновение
+                            if (dy > 0) {
+                                ball.y = bricks[row][col].y + bricks[row][col].height;
+                            } else {
+                                ball.y = bricks[row][col].y - ball.height;
+                            }
+                            ball_speed_y = -ball_speed_y;
+                        }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
                         // Корректировка позиции мяча перед отскоком
                         if (fabs(dx) > fabs(dy)) {
                             // Горизонтальное столкновение
@@ -395,6 +418,7 @@ void game_arkanoid(spi_device_handle_t spi) {
 						    }
 						    ball_speed_y = -ball_speed_y * 0.99f; // Аналогичное трение
                         }
+*/
                         
                         // После обработки столкновения выходим из циклов
                         goto collision_processed;
@@ -415,7 +439,7 @@ void game_arkanoid(spi_device_handle_t spi) {
 
 
             if (is_colliding(player, ball)) {
-                ball.y = player.y - ball.height - 1; // 1 пиксель для надежности
+                ball.y = player.y - ball.height;
                 int hit_pixel = (ball.x + ball.width/2) - (player.x + player.width/2);
                 float hit_norm = (float)hit_pixel / (player.width/2.0f);
                 const float center_speed = 1.25f;
@@ -431,6 +455,7 @@ void game_arkanoid(spi_device_handle_t spi) {
                     base_speed += 0.25f;
                 }
             }
+
 
             // Границы экрана
 			if (ball.y <= 0) {
