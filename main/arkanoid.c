@@ -46,33 +46,41 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
         switch (shape_type) {
             case SHAPE_SNAKE: {
                 if (rand() % 2 == 0) {
-                    printf("%d. Змейка (классическая) в [%d,%d]\n", s+1, start_row, start_col);
-                    // Классическая змейка
-                    for (int col = start_col; col < start_col + 6 && col < BRICK_COLS; col++) {
-                        bricks[start_row][col].active = true;
-                    }
-                    for (int row = start_row + 1; row < start_row + 3 && row < BRICK_ROWS; row++) {
-                        bricks[row][start_col + 5].active = true;
-                    }
-                    for (int col = start_col + 5; col >= start_col && col >= 0; col--) {
-                        bricks[start_row + 2][col].active = true;
-                    }
-                    for (int row = start_row + 3; row < start_row + 5 && row < BRICK_ROWS; row++) {
-                        bricks[row][start_col].active = true;
-                    }
-                    for (int col = start_col; col < start_col + 3 && col < BRICK_COLS; col++) {
-                        bricks[start_row + 4][col].active = true;
-                    }
-                } else {
+			        printf("%d. Змейка (классическая) в [%d,%d]\n", s+1, start_row, start_col);
+			        
+			        // Шаблон классической змейки (17 точек)
+			        int pattern[][2] = {
+			            // Горизонтальная часть 1 (6 блоков вправо)
+			            {0,0}, {0,1}, {0,2}, {0,3}, {0,4}, {0,5},
+			            // Вертикальная часть 1 (2 блока вниз)
+			            {1,5}, {2,5},
+			            // Горизонтальная часть 2 (6 блоков влево)
+			            {2,4}, {2,3}, {2,2}, {2,1}, {2,0},
+			            // Вертикальная часть 2 (2 блока вниз)
+			            {3,0}, {4,0},
+			            // Хвост (3 блока вправо)
+			            {4,1}, {4,2}
+			        };
+			        
+			        int points_count = sizeof(pattern) / sizeof(pattern[0]);
+			        
+			        for (int i = 0; i < points_count; i++) {
+			            int r = start_row + pattern[i][0];
+			            int c = start_col + pattern[i][1];
+			            if (r < BRICK_ROWS && c < BRICK_COLS && !bricks[r][c].active) {
+			                bricks[r][c].active = true;
+			            }
+			        }
+	            } else {
                     printf("%d. Змейка (компактная) в [%d,%d]\n", s+1, start_row, start_col);
                     // Компактная змейка
                     int pattern[5][2] = {{0,0}, {0,1}, {1,1}, {1,2}, {2,2}};
                     for (int i = 0; i < 5; i++) {
                         int r = start_row + pattern[i][0];
                         int c = start_col + pattern[i][1];
-                        if (r < BRICK_ROWS && c < BRICK_COLS) {
-                            bricks[r][c].active = true;
-                        }
+						if (r < BRICK_ROWS && c < BRICK_COLS && !bricks[r][c].active) { // !bricks - проверка чтобы блоки не создавались
+						    bricks[r][c].active = true;                                 // там где они уже созданы при генерации
+						}
                     }
                 }
                 break;
@@ -85,7 +93,7 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
 			    for (int i = 0; i < length; i++) {
 			        int r = start_row;
 			        int c = start_col + i;
-			        if (c < BRICK_COLS) {  // Проверка границ
+			        if (c < BRICK_COLS && !bricks[r][c].active) {  // Проверка границ
 			            bricks[r][c].active = true;
 			        }
 			    }
@@ -99,7 +107,7 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
                 for (int i = 0; i < length; i++) {
                     int r = start_row + i;
                     int c = start_col;
-                    if (c < BRICK_ROWS) {  // Проверка границ
+                    if (c < BRICK_ROWS && !bricks[r][c].active) {  // Проверка границ
                         bricks[r][c].active = true;
                     }
                 }
@@ -110,7 +118,9 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
                 // Генерируем случайный блок 2x2
                 for (int i = 0; i < 2 && (start_row + i) < BRICK_ROWS; i++) {
                     for (int j = 0; j < 2 && (start_col + j) < BRICK_COLS; j++) {
-                        bricks[start_row + i][start_col + j].active = true;
+  				    	if (!bricks[start_row + i][start_col + j].active) {
+			    	        bricks[start_row + i][start_col + j].active = true;
+				        }
                     }
                 }
                 break;
