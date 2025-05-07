@@ -13,7 +13,7 @@ void game_doodle(spi_device_handle_t spi) {
         // Обработка ввода игрока
         if (xStreamBufferReceive(xStreamBuffer, &received_button, sizeof(received_button), 0) > 0) {
             if (received_button == BUTTON_UP) {
-                if (image_doodle_hero.y > speed) {
+                if (image_doodle_hero.y >= speed) {
                     image_doodle_hero.y = image_doodle_hero.y - speed;
                 } else {
                     image_doodle_hero.y = DISPLAY_HEIGHT + 15;
@@ -21,14 +21,14 @@ void game_doodle(spi_device_handle_t spi) {
                 draw_image(spi, &image_doodle_hero);
             }
             else if (received_button == BUTTON_DOWN) {
-                if (image_doodle_hero.y < DISPLAY_HEIGHT + 15) {
+                if (image_doodle_hero.y + speed < DISPLAY_HEIGHT + 15) {
                     image_doodle_hero.y = image_doodle_hero.y + speed;
                 } else {
                     image_doodle_hero.y = 0;
                 }
                 draw_image(spi, &image_doodle_hero);
             }
-            vTaskDelay(5 / portTICK_PERIOD_MS);
+            vTaskDelay(10 / portTICK_PERIOD_MS);
         }
     }
 }

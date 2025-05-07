@@ -57,7 +57,16 @@ void draw_image(spi_device_handle_t spi, const Image *my_image) {
     send_data(spi, col_data, 4);
 
     send_command(spi, CMD_ROW);
-    uint8_t row_data[4] = {0, my_image->y & 0xFF, 0, (my_image->y - 1 + my_image->height) & 0xFF};
+    // Правки для скролинга
+    // если разрешено рисовать объект от конца экрана к началу
+    uint8_t row_data[4] = {
+        0, 
+        my_image->y & 0xFF,
+        0, 
+        ((my_image->y + my_image->height) > DISPLAY_HEIGHT) 
+            ? (my_image->height - (DISPLAY_HEIGHT - my_image->y)) & 0xFF
+            : (my_image->y + my_image->height) & 0xFF
+    };
     send_data(spi, row_data, 4);
 
     send_command(spi, CMD_SET_PIXEL);
@@ -65,7 +74,7 @@ void draw_image(spi_device_handle_t spi, const Image *my_image) {
     // Создаем DMA буфер
     uint16_t *dma_buffer = heap_caps_malloc(
         my_image->size_image * sizeof(uint16_t),
-        MALLOC_CAP_DMA
+        MALLOC_CAP_DMA | MALLOC_CAP_32BIT
     );
     // Проверяем доступность памяти
     if (!dma_buffer) {
