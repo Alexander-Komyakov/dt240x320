@@ -6,6 +6,7 @@ void game_doodle(spi_device_handle_t spi) {
 
     fill_screen(spi, 0xFFFF);
     draw_image(spi, &image_doodle_hero);
+    draw_image(spi, &image_platform);
 
     int received_button;
     uint8_t speed = 3;
@@ -39,6 +40,7 @@ void game_doodle(spi_device_handle_t spi) {
         } else {
             limit_jump = 80;
         }
+        draw_image(spi, &image_platform);
         draw_image(spi, &image_doodle_hero);
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
