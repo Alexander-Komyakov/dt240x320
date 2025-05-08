@@ -11,4 +11,15 @@
 #include <stdio.h>
 
 
+#define MAX_PLATFORM 20
+
+typedef struct {
+    uint16_t x;
+    uint8_t y;  
+    uint8_t type;  // 00=обычная, 01=движ, 10=пружина
+    uint8_t visible;
+} Platform;
+
+
 void game_doodle(spi_device_handle_t spi);
+void draw_platform(spi_device_handle_t spi, const Platform* p, const Image* platform_normal);
