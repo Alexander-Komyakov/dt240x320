@@ -205,20 +205,20 @@ void game_arkanoid(spi_device_handle_t spi) {
     GameObject player = {DISPLAY_WIDTH/2 - 20, 230, 40, 10, 0xFFFF};
     GameObject ball = {DISPLAY_WIDTH/2, player.y - 10, 10, 10, 0xFFFF};
 
-    int received_button = 0;
-    uint8_t speed = 3;
-    float ball_speed_x = 0;
-    float ball_speed_y = 0;
-    float base_speed = 1.5f;
-    uint8_t speed_hits = 0;
-    uint16_t prev_player_x = player.x;
-    uint16_t prev_ball_x = ball.x;
-    uint16_t prev_ball_y = ball.y;
-    uint8_t lives = 5;
-    uint8_t round = 1;
-    bool ball_active = false;
-    bool red_button_enabled = true;
-    bool game_paused = false;
+	int received_button = 0;         // Код полученной кнопки
+	uint8_t speed = 3;              // Скорость движения платформы
+	float ball_speed_x = 0;         // Горизонтальная скорость мяча
+	float ball_speed_y = 0;         // Вертикальная скорость мяча
+	float base_speed = 1.5f;        // Базовая скорость мяча
+	uint8_t speed_hits = 0;         // Счётчик ударов для увеличения скорости
+	uint16_t prev_player_x = player.x;  // Предыдущая позиция платформы (для отрисовки)
+	int16_t prev_ball_x = ball.x;     // Предыдущая X-позиция мяча
+	int16_t prev_ball_y = ball.y;     // Предыдущая Y-позиция мяча
+	uint8_t lives = 5;               // Количество жизней
+	uint8_t round = 1;               // Текущий раунд
+	bool ball_active = false;        // Флаг, что мяч в движении
+	bool red_button_enabled = true;  // Флаг активности красной кнопки
+	bool game_paused = false;       // Флаг паузы
 
     // Первый раунд - стандартное расположение
     for (int row = 0; row < BRICK_ROWS; row++) {
@@ -229,7 +229,7 @@ void game_arkanoid(spi_device_handle_t spi) {
             bricks[row][col].height = BRICK_HEIGHT;
             bricks[row][col].color = brick_colors[row];
             bricks[row][col].active = true;
-            bricks[row][col].unbreakable = (col % 5 == 0);
+            bricks[row][col].unbreakable = (col % 5 == 0); // Каждый 5 ряд неразбиваемый
             if (bricks[row][col].unbreakable) {
                 bricks[row][col].color = 0x7BEF;
             }
@@ -332,100 +332,118 @@ void game_arkanoid(spi_device_handle_t spi) {
             prev_player_x = player.x;
         }
 
+		// Движение мяча
         if (ball_active) {
-            prev_ball_x = ball.x;
-            prev_ball_y = ball.y;
-            ball.x += (int)ball_speed_x;
-            ball.y += (int)ball_speed_y;
+		    prev_ball_x = ball.x;  // Запоминаем, где был мячик
+		    prev_ball_y = ball.y;  // (чтобы потом стереть его след)
+		    ball.x += (int)ball_speed_x;  // Двигаем мячик вправо/влево
+		    ball.y += (int)ball_speed_y;  // Двигаем мячик вверх/вниз
 
 
+            // Обработка столкновений мяча с кирпичами
+			bool brick_hit = false;  // Пока не знаем, попали или нет
+			for (int row = 0; row < BRICK_ROWS; row++) {  // Проверяем все ряды кирпичиков
+			    for (int col = 0; col < BRICK_COLS; col++) {  // Проверяем все кирпичики в ряду
+			        if (bricks[row][col].active &&  // Если кирпичик есть...
+			            is_colliding(ball, (GameObject){  // ...и мячик его задел
+			                bricks[row][col].x, 
+			                bricks[row][col].y, 
+			                bricks[row][col].width, 
+			                bricks[row][col].height, 
+			                0})) {
+			            brick_hit = true;  // Ура, попали!
+			                        
+                        //  Запоминаем, откуда прилетел мячик
+                        float prev_ball_x = ball.x - ball_speed_x; // Где был мячик до удара?
+                        float prev_ball_y = ball.y - ball_speed_y;
+                        
+						// Обработка столкновения с кирпичом
+						if (bricks[row][col].unbreakable) {
+						    // Для неразрушаемых блоков просто делаем отскок
+						    // Нет необходимости перерисовывать - они не меняются
+						} else {
+						    // Разрушаемые блоки - деактивируем и стираем
+						    bricks[row][col].active = false;
+						    fill_rect(spi, bricks[row][col].x, bricks[row][col].y,
+						             bricks[row][col].width, bricks[row][col].height,
+						             0x0000);
+						}
 
-            // Обработка столкновений с кирпичами
-            bool brick_hit = false;
-            for (int row = 0; row < BRICK_ROWS; row++) {
-                for (int col = 0; col < BRICK_COLS; col++) {
-                    if (bricks[row][col].active && 
-                        is_colliding(ball, (GameObject){
-                            bricks[row][col].x, 
-                            bricks[row][col].y, 
-                            bricks[row][col].width, 
-                            bricks[row][col].height, 
-                            0})) {
-                        
-                        brick_hit = true;
-                        
-                        // Для неразбиваемых блоков только отскок + перерисовка
-                        if (bricks[row][col].unbreakable) {
-                            // Перерисовываем блок, чтобы избежать артефактов
-                            fill_rect(spi, bricks[row][col].x, bricks[row][col].y,
-                                     bricks[row][col].width, bricks[row][col].height,
-                                     bricks[row][col].color);
-                        } else {
-                            // Обычные блоки - уничтожаем
-                            bricks[row][col].active = false;
-                            fill_rect(spi, bricks[row][col].x, bricks[row][col].y,
-                                     bricks[row][col].width, bricks[row][col].height,
-                                     0x0000);
-                        }
-                        
-                        // Улучшенное определение направления отскока
-                        float ball_center_x = ball.x + ball.width/2;
-                        float ball_center_y = ball.y + ball.height/2;
-                        float brick_center_x = bricks[row][col].x + bricks[row][col].width/2;
-                        float brick_center_y = bricks[row][col].y + bricks[row][col].height/2;
-                        
-                        float dx = ball_center_x - brick_center_x;
-                        float dy = ball_center_y - brick_center_y;
-                        
-//////////////////////////////////////////////////////  ПРОБЛЕМНАЯ ЧАСТЬ, НА ДОРАБОТКУ ///////////////////////////////////
-                        // Корректировка позиции мяча перед отскоком
-                        if (fabs(dx) > fabs(dy)) {
+						// Определяем, откуда прилетел мячик
+                        bool from_left = prev_ball_x + ball.width <= bricks[row][col].x;  // Слева?
+                        bool from_right = prev_ball_x >= bricks[row][col].x + bricks[row][col].width;  // Справа?
+                        bool from_top = prev_ball_y + ball.height <= bricks[row][col].y;  // Сверху?
+                        bool from_bottom = prev_ball_y >= bricks[row][col].y + bricks[row][col].height;  // Снизу?
+
+
+                        // Гибридная система обработки столкновений
+                        if (from_left || from_right) {
                             // Горизонтальное столкновение
-                            if (dx > 0) {
-                                ball.x = bricks[row][col].x + bricks[row][col].width;
+                            if (from_left) {
+                                ball.x = bricks[row][col].x - ball.width - 0.3f; // Отскакивает влево
                             } else {
-                                ball.x = bricks[row][col].x - ball.width;
+                                ball.x = bricks[row][col].x + bricks[row][col].width + 0.3f; // Отскакивает вправо
                             }
-                            ball_speed_x = -ball_speed_x;
-                        } else {
-                            // Вертикальное столкновение
-                            if (dy > 0) {
-                                ball.y = bricks[row][col].y + bricks[row][col].height;
-                            } else {
-                                ball.y = bricks[row][col].y - ball.height;
-                            }
-                            ball_speed_y = -ball_speed_y;
+                            ball_speed_x = -ball_speed_x; // Меняем направление скорости
                         }
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*
-                        // Корректировка позиции мяча перед отскоком
-                        if (fabs(dx) > fabs(dy)) {
-                            // Горизонтальное столкновение
-						    if (dx > 0) { // Справа
-						        ball.x = bricks[row][col].x + bricks[row][col].width + 1;
-						    } else { // Слева
-						        ball.x = bricks[row][col].x - ball.width - 1;
-						    }
-						    ball_speed_x = -ball_speed_x * 0.99f; // Добавляем небольшое трение
-                        } else {
-                            // Вертикальное столкновение
-						    if (dy > 0) { // Снизу
-						        ball.y = bricks[row][col].y + bricks[row][col].height + 1;
-						    } else { // Сверху
-						        ball.y = bricks[row][col].y - ball.height - 1;
-						    }
-						    ball_speed_y = -ball_speed_y * 0.99f; // Аналогичное трение
-                        }
-*/
                         
+                        if (from_top || from_bottom) {
+                            // Вертикальное столкновение
+                            if (from_top) {
+                                ball.y = bricks[row][col].y - ball.height - 0.3f; // Отскакивает вверх
+								if ((int16_t)ball.y < 0) ball.y = 0; // Не вылетает за верх экрана
+                            } else {
+                                ball.y = bricks[row][col].y + bricks[row][col].height + 0.3f; // Отскакивает вниз
+                            }
+                            ball_speed_y = -ball_speed_y; // Меняем направление скорости
+                        }
+
+                        // Обработка угловых столкновений (когда не ясно направление)
+                        if (!(from_left || from_right || from_top || from_bottom)) {
+                            // Используем более мягкую версию углового отскока
+                            float dx = (ball.x + ball.width/2) - (bricks[row][col].x + bricks[row][col].width/2);
+                            float dy = (ball.y + ball.height/2) - (bricks[row][col].y + bricks[row][col].height/2);
+                            
+                            if (fabs(dx) > fabs(dy)) {
+                                if (dx > 0) {
+                                    ball.x = bricks[row][col].x + bricks[row][col].width + 0.3f;
+                                } else {
+                                    ball.x = bricks[row][col].x - ball.width - 0.3f;
+                                    if ((int16_t)ball.x < 0) ball.x = 0;
+                                }
+                                ball_speed_x = -ball_speed_x;
+                            } else {
+                                if (dy > 0) {
+                                    ball.y = bricks[row][col].y + bricks[row][col].height + 0.3f;
+                                } else {
+                                    ball.y = bricks[row][col].y - ball.height - 0.3f;
+									if ((int16_t)ball.y < 0) ball.y = 0;
+                                }
+                                ball_speed_y = -ball_speed_y;
+                            }
+                        }
+
+                        // Ограничение скорости после столкновения
+                        const float MAX_BALL_SPEED = 5.0f;
+                        if (fabs(ball_speed_x) > MAX_BALL_SPEED) {
+                            ball_speed_x = copysignf(MAX_BALL_SPEED, ball_speed_x);
+                        }
+                        if (fabs(ball_speed_y) > MAX_BALL_SPEED) {
+                            ball_speed_y = copysignf(MAX_BALL_SPEED, ball_speed_y);
+                        }
+
                         // После обработки столкновения выходим из циклов
                         goto collision_processed;
                     }
                 }
             }
             collision_processed:
+
+
+
+
+			printf ("x: %d, y: %d\n", ball.x, ball.y);
+
 
             // Если было столкновение с кирпичом, перерисовываем мяч в новой позиции
             if (brick_hit) {

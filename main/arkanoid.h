@@ -83,7 +83,7 @@ typedef enum {
 // Структуры (остаются без изменений)
 typedef struct {
     int16_t x;
-    uint16_t y;
+    int16_t y;
     uint16_t width;
     uint16_t height;
     uint16_t color;
