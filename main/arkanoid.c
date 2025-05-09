@@ -339,12 +339,28 @@ bool all_bricks_destroyed(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
     return true;
 }
 
-void show_round_screen(spi_device_handle_t spi, uint8_t round, uint8_t lives, float speed) {
+void show_round_screen(spi_device_handle_t spi, uint16_t round, uint8_t lives, float speed) {
     fill_screen(spi, 0x0000);
+
+    // Базовый текст "РАУНД "
+    const uint16_t round_text_prefix[] = {u'Р', u'А', u'У', u'Н', u'Д', u' ', 0};
+    draw_text(spi, DISPLAY_WIDTH/2 - 20, DISPLAY_HEIGHT/2 - 20, round_text_prefix, 0xFFFF);
     
+    // Отображение номера раунда (1 или 2 цифры)
+    if (round < 10) {
+        const uint16_t round_num[] = {u'0' + round, 0};
+        draw_text(spi, DISPLAY_WIDTH/2 + 15, DISPLAY_HEIGHT/2 - 20, round_num, 0xFFFF);
+    } else {
+        const uint16_t round_num[] = {u'0' + (round / 10), u'0' + (round % 10), 0};
+        draw_text(spi, DISPLAY_WIDTH/2 + 15, DISPLAY_HEIGHT/2 - 20, round_num, 0xFFFF);
+    }
+
+
+/*    
     const uint16_t round_text[] = {u'Р', u'А', u'У', u'Н', u'Д', u' ', u'0' + round, 0};
     draw_text(spi, DISPLAY_WIDTH/2 - 20, DISPLAY_HEIGHT/2 - 20, round_text, 0xFFFF);
-    
+
+*/
     const uint16_t lives_text[] = {u'Ж', u'И', u'З', u'Н', u'И', u':', u'0' + lives, 0};
     draw_text(spi, DISPLAY_WIDTH/2 - 20, DISPLAY_HEIGHT/2, lives_text, 0xFFFF);
     
@@ -372,7 +388,7 @@ void game_arkanoid(spi_device_handle_t spi) {
 	int16_t prev_ball_x = ball.x;     // Предыдущая X-позиция мяча
 	int16_t prev_ball_y = ball.y;     // Предыдущая Y-позиция мяча
 	uint8_t lives = 5;               // Количество жизней
-	uint8_t round = 1;               // Текущий раунд
+	uint16_t round = 1;               // Текущий раунд
 	bool ball_active = false;        // Флаг, что мяч в движении
 	bool red_button_enabled = true;  // Флаг активности красной кнопки
 	bool game_paused = false;       // Флаг паузы
