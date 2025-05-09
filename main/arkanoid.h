@@ -25,6 +25,22 @@
 
 // Типы фигур
 
+
+typedef enum {
+    HORIZONTAL_LINE,
+    VERTICAL_LINE,
+    SHAPE_SQUARE,
+    SHAPE_SNAKE,
+    SHAPE_SPIDER,
+    SHAPE_LADDER,
+    SHAPE_CROSS,
+    SHAPE_TRIANGLE,
+    SHAPE_SNOWFLAKE,
+    SHAPE_TOTAL_COUNT
+} ShapeType;
+
+/*
+
 typedef enum {
     HORIZONTAL_LINE,
     VERTICAL_LINE,
@@ -35,6 +51,7 @@ typedef enum {
     SHAPE_TOTAL_COUNT
 } ShapeType;
 
+*/
 
 // Максимальное количество блоков в фигуре
 #define MAX_BRICKS 20  

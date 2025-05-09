@@ -34,13 +34,18 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
     }
 
     // Генерация 1 фигуры (тестовый режим)
-    int shapes = 3;
+    int shapes = 1;
     printf("\n=== Новый раунд ===\nГенерируем %d фигур:\n", shapes);
 
     // Сначала генерируем фигуры
     for (int s = 0; s < shapes; s++) {
-        int start_row = rand() % (BRICK_ROWS - 6);
-        int start_col = rand() % (BRICK_COLS - 8);
+//        int start_row = rand() % (BRICK_ROWS - 6);
+//        int start_col = rand() % (BRICK_COLS - 8);
+
+		int max_figure_height = 8; // Максимальная высота самой большой фигуры
+		int max_figure_width = 6;  // Максимальная ширина самой большой фигуры
+		int start_row = rand() % (BRICK_ROWS - max_figure_height + 1);
+		int start_col = rand() % (BRICK_COLS - max_figure_width + 1);
         ShapeType shape_type = rand() % SHAPE_TOTAL_COUNT;
 
         switch (shape_type) {
@@ -113,6 +118,158 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
                 }
                 break;
             }
+			case SHAPE_SQUARE: {
+			    int size = 3 + rand() % 4; // Случайный размер от 3x3 до 6x6
+			    printf("%d. Квадрат %dx%d в [%d,%d]\n", s+1, size, size, start_row, start_col);
+			    
+			    for (int i = 0; i < size; i++) {
+			        for (int j = 0; j < size; j++) {
+			            int r = start_row + i;
+			            int c = start_col + j;
+			            if (r < BRICK_ROWS && c < BRICK_COLS && !bricks[r][c].active) {
+			                bricks[r][c].active = true;
+			            }
+			        }
+			    }
+			    break;
+			}
+			case SHAPE_SPIDER: {
+			    printf("%d. Паук в [%d,%d]\n", s+1, start_row, start_col);
+			    
+			    // Вертикальная линия (8 блоков)
+			    for (int i = 0; i < 8; i++) {
+			        int r = start_row + i;
+			        int c = start_col + 2; // Центральная колонка
+			        if (r < BRICK_ROWS && c < BRICK_COLS && !bricks[r][c].active) {
+			            bricks[r][c].active = true;
+			        }
+			    }
+
+			    // Горизонтальные линии (по 3 блока влево и вправо)
+			    // Нижняя (1-я позиция снизу)
+			    for (int j = -1; j <= 1; j++) {
+			        int r = start_row + 0;
+			        int c = start_col + 2 + j;
+			        if (r < BRICK_ROWS && c >= 0 && c < BRICK_COLS && !bricks[r][c].active) {
+			            bricks[r][c].active = true;
+			        }
+			    }
+			    // Средняя (3-я позиция снизу)
+			    for (int j = -1; j <= 1; j++) {
+			        int r = start_row + 2;
+			        int c = start_col + 2 + j;
+			        if (r < BRICK_ROWS && c >= 0 && c < BRICK_COLS && !bricks[r][c].active) {
+			            bricks[r][c].active = true;
+			        }
+			    }
+			    // Верхняя (5-я позиция снизу)
+			    for (int j = -1; j <= 1; j++) {
+			        int r = start_row + 4;
+			        int c = start_col + 2 + j;
+			        if (r < BRICK_ROWS && c >= 0 && c < BRICK_COLS && !bricks[r][c].active) {
+			            bricks[r][c].active = true;
+			        }
+			    }
+			    break;
+			}
+			case SHAPE_LADDER: {
+			    printf("%d. Лесенка в [%d,%d]\n", s+1, start_row, start_col);
+			    
+			    int pattern[][2] = {
+			        {0,0}, {1,0}, {1,1}, {2,1}, {2,2}, {3,2}, {3,3}
+			    };
+			    int points_count = sizeof(pattern) / sizeof(pattern[0]);
+			    
+			    for (int i = 0; i < points_count; i++) {
+			        int r = start_row + pattern[i][0];
+			        int c = start_col + pattern[i][1];
+			        if (r < BRICK_ROWS && c < BRICK_COLS && !bricks[r][c].active) {
+			            bricks[r][c].active = true;
+			        }
+			    }
+			    break;
+			}
+			case SHAPE_CROSS: {
+			    printf("%d. Крест в [%d,%d]\n", s+1, start_row, start_col);
+			    
+			    // Вертикальная линия (5 блоков)
+			    for (int i = 0; i < 5; i++) {
+			        int r = start_row + i;
+			        int c = start_col + 2;
+			        if (r < BRICK_ROWS && c < BRICK_COLS && !bricks[r][c].active) {
+			            bricks[r][c].active = true;
+			        }
+			    }
+			    
+			    // Горизонтальная линия (5 блоков)
+			    for (int j = 0; j < 5; j++) {
+			        int r = start_row + 2;
+			        int c = start_col + j;
+			        if (r < BRICK_ROWS && c < BRICK_COLS && !bricks[r][c].active) {
+			            bricks[r][c].active = true;
+			        }
+			    }
+			    break;
+			}
+			case SHAPE_TRIANGLE: {
+			    printf("%d. Треугольник в [%d,%d]\n", s+1, start_row, start_col);
+			    
+			    int size = 3 + rand() % 3; // Размер от 3 до 5
+			    for (int i = 0; i < size; i++) {
+			        for (int j = 0; j <= i; j++) {
+			            int r = start_row + i;
+			            int c = start_col + j;
+			            if (r < BRICK_ROWS && c < BRICK_COLS && !bricks[r][c].active) {
+			                bricks[r][c].active = true;
+			            }
+			        }
+			    }
+			    break;
+			}
+			case SHAPE_SNOWFLAKE: {
+			    printf("%d. Снежинка в [%d,%d]\n", s+1, start_row, start_col);
+			    
+			    // Центральный блок
+			    int center_r = start_row + 2;
+			    int center_c = start_col + 2;
+			    if (center_r < BRICK_ROWS && center_c < BRICK_COLS && !bricks[center_r][center_c].active) {
+			        bricks[center_r][center_c].active = true;
+			    }
+			    
+			    // Лучи (по 3 блока в каждом направлении)
+			    for (int i = 0; i < 3; i++) {
+			        // Верхний луч
+			        if (center_r - i >= 0) {
+			            bricks[center_r - i][center_c].active = true;
+			        }
+			        // Нижний луч
+			        if (center_r + i < BRICK_ROWS) {
+			            bricks[center_r + i][center_c].active = true;
+			        }
+			        // Левый луч
+			        if (center_c - i >= 0) {
+			            bricks[center_r][center_c - i].active = true;
+			        }
+			        // Правый луч
+			        if (center_c + i < BRICK_COLS) {
+			            bricks[center_r][center_c + i].active = true;
+			        }
+			        // Диагональные лучи
+			        if (center_r - i >= 0 && center_c - i >= 0) {
+			            bricks[center_r - i][center_c - i].active = true;
+			        }
+			        if (center_r - i >= 0 && center_c + i < BRICK_COLS) {
+			            bricks[center_r - i][center_c + i].active = true;
+			        }
+			        if (center_r + i < BRICK_ROWS && center_c - i >= 0) {
+			            bricks[center_r + i][center_c - i].active = true;
+			        }
+			        if (center_r + i < BRICK_ROWS && center_c + i < BRICK_COLS) {
+			            bricks[center_r + i][center_c + i].active = true;
+			        }
+			    }
+			    break;
+			}
             default: {
                 printf("%d. Случайный блок в [%d,%d]\n", s+1, start_row, start_col);
                 // Генерируем случайный блок 2x2
@@ -439,11 +596,10 @@ void game_arkanoid(spi_device_handle_t spi) {
             }
             collision_processed:
 
-
-
-
+/*
+			// Проверка координаты движения мяча
 			printf ("x: %d, y: %d\n", ball.x, ball.y);
-
+*/
 
             // Если было столкновение с кирпичом, перерисовываем мяч в новой позиции
             if (brick_hit) {
@@ -453,8 +609,6 @@ void game_arkanoid(spi_device_handle_t spi) {
                 prev_ball_y = ball.y;
                 continue; // Пропускаем остальную обработку для этого кадра
             }
-
-
 
             if (is_colliding(player, ball)) {
                 ball.y = player.y - ball.height;
