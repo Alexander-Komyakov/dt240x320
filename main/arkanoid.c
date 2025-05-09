@@ -34,7 +34,8 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
     }
 
     // Генерация 1 фигуры (тестовый режим)
-    int shapes = 1;
+//    int shapes = 5;
+	int shapes = 3 + rand() % 4;
     printf("\n=== Новый раунд ===\nГенерируем %d фигур:\n", shapes);
 
     // Сначала генерируем фигуры
@@ -393,6 +394,7 @@ void game_arkanoid(spi_device_handle_t spi) {
 	bool red_button_enabled = true;  // Флаг активности красной кнопки
 	bool game_paused = false;       // Флаг паузы
 
+/*
     // Первый раунд - стандартное расположение
     for (int row = 0; row < BRICK_ROWS; row++) {
         for (int col = 0; col < BRICK_COLS; col++) {
@@ -408,11 +410,13 @@ void game_arkanoid(spi_device_handle_t spi) {
             }
         }
     }
+*/
     
     show_round_screen(spi, round, lives, base_speed);
     fill_screen(spi, 0x0000);
     fill_rect(spi, player.x, player.y, player.width, player.height, player.color);
     fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
+    generate_random_bricks(bricks);
     draw_bricks(spi, bricks);
 
     while (1) {
@@ -683,11 +687,56 @@ void game_arkanoid(spi_device_handle_t spi) {
                     red_button_enabled = true;
                     base_speed = 1.5f;
                     speed_hits = 0;
-                } else {
+                } else
+
+				if (lives <= 0) {
+				    // Конец игры
+				    fill_screen(spi, 0x0000);
+				    const uint16_t game_over[] = {u'К', u'О', u'Н', u'Е', u'Ц', u' ', u'И', u'Г', u'Р', u'Ы', 0};
+				    draw_text(spi, DISPLAY_WIDTH/2 - 30, DISPLAY_HEIGHT/2 - 20, game_over, 0xFFFF);
+				    draw_text(spi, DISPLAY_WIDTH/2 - 115, DISPLAY_HEIGHT/2 + 30, 
+				             u"ЧТОБЫ НАЧАТЬ ЗАНОВО НАЖМИТЕ БЕЛУЮ КНОПКУ", 0xFFFF);
+				    
+				    // Ждем нажатия белой кнопки для рестарта
+				    while (gpio_get_level(BUTTON_WHITE) != 0) {
+				        vTaskDelay(50 / portTICK_PERIOD_MS);
+				    }
+
+				    // Сброс игры
+				    lives = 5;
+				    round = 1;
+				    base_speed = 1.5f;
+				    speed_hits = 0;
+				    
+				    // Генерация нового уровня
+				    generate_random_bricks(bricks);
+				    show_round_screen(spi, round, lives, base_speed);
+				    
+				    // Сброс позиций игрока и мяча
+				    player.x = DISPLAY_WIDTH/2 - 20;
+				    ball.x = player.x + player.width/2 - ball.width/2;
+				    ball.y = player.y - ball.height;
+				    prev_ball_x = ball.x;
+				    prev_ball_y = ball.y;
+				    ball_speed_x = 0;
+				    ball_speed_y = 0;
+				    ball_active = false;
+				    red_button_enabled = true;
+				    
+				    // Отрисовка начального состояния
+				    fill_screen(spi, 0x0000);
+				    fill_rect(spi, player.x, player.y, player.width, player.height, player.color);
+				    fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
+				    draw_bricks(spi, bricks);
+
+//					game_over = true;
+
+
+/*
                     const uint16_t game_over[] = {u'К', u'О', u'Н', u'Е', u'Ц', u' ', u'И', u'Г', u'Р', u'Ы', 0};
                     draw_text(spi, DISPLAY_WIDTH/2 - 20, DISPLAY_HEIGHT/2, game_over, 0xFFFF);
                     vTaskDelay(3000 / portTICK_PERIOD_MS);
-                    return;
+*/
                 }
             }
             else {
