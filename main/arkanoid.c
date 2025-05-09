@@ -34,14 +34,13 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
     }
 
     // Генерация 1 фигуры (тестовый режим)
-//    int shapes = 5;
+//    int shapes = 1;
+	// Генерация от 3 до 6 фигур
 	int shapes = 3 + rand() % 4;
     printf("\n=== Новый раунд ===\nГенерируем %d фигур:\n", shapes);
 
     // Сначала генерируем фигуры
     for (int s = 0; s < shapes; s++) {
-//        int start_row = rand() % (BRICK_ROWS - 6);
-//        int start_col = rand() % (BRICK_COLS - 8);
 
 		int max_figure_height = 8; // Максимальная высота самой большой фигуры
 		int max_figure_width = 6;  // Максимальная ширина самой большой фигуры
@@ -53,7 +52,6 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
             case SHAPE_SNAKE: {
                 if (rand() % 2 == 0) {
 			        printf("%d. Змейка (классическая) в [%d,%d]\n", s+1, start_row, start_col);
-			        
 			        // Шаблон классической змейки (17 точек)
 			        int pattern[][2] = {
 			            // Горизонтальная часть 1 (6 блоков вправо)
@@ -67,9 +65,8 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
 			            // Хвост (3 блока вправо)
 			            {4,1}, {4,2}
 			        };
-			        
 			        int points_count = sizeof(pattern) / sizeof(pattern[0]);
-			        
+
 			        for (int i = 0; i < points_count; i++) {
 			            int r = start_row + pattern[i][0];
 			            int c = start_col + pattern[i][1];
@@ -122,7 +119,7 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
 			case SHAPE_SQUARE: {
 			    int size = 3 + rand() % 4; // Случайный размер от 3x3 до 6x6
 			    printf("%d. Квадрат %dx%d в [%d,%d]\n", s+1, size, size, start_row, start_col);
-			    
+
 			    for (int i = 0; i < size; i++) {
 			        for (int j = 0; j < size; j++) {
 			            int r = start_row + i;
@@ -136,7 +133,6 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
 			}
 			case SHAPE_SPIDER: {
 			    printf("%d. Паук в [%d,%d]\n", s+1, start_row, start_col);
-			    
 			    // Вертикальная линия (8 блоков)
 			    for (int i = 0; i < 8; i++) {
 			        int r = start_row + i;
@@ -145,7 +141,6 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
 			            bricks[r][c].active = true;
 			        }
 			    }
-
 			    // Горизонтальные линии (по 3 блока влево и вправо)
 			    // Нижняя (1-я позиция снизу)
 			    for (int j = -1; j <= 1; j++) {
@@ -175,12 +170,11 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
 			}
 			case SHAPE_LADDER: {
 			    printf("%d. Лесенка в [%d,%d]\n", s+1, start_row, start_col);
-			    
 			    int pattern[][2] = {
 			        {0,0}, {1,0}, {1,1}, {2,1}, {2,2}, {3,2}, {3,3}
 			    };
 			    int points_count = sizeof(pattern) / sizeof(pattern[0]);
-			    
+
 			    for (int i = 0; i < points_count; i++) {
 			        int r = start_row + pattern[i][0];
 			        int c = start_col + pattern[i][1];
@@ -192,7 +186,6 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
 			}
 			case SHAPE_CROSS: {
 			    printf("%d. Крест в [%d,%d]\n", s+1, start_row, start_col);
-			    
 			    // Вертикальная линия (5 блоков)
 			    for (int i = 0; i < 5; i++) {
 			        int r = start_row + i;
@@ -201,7 +194,6 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
 			            bricks[r][c].active = true;
 			        }
 			    }
-			    
 			    // Горизонтальная линия (5 блоков)
 			    for (int j = 0; j < 5; j++) {
 			        int r = start_row + 2;
@@ -214,7 +206,6 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
 			}
 			case SHAPE_TRIANGLE: {
 			    printf("%d. Треугольник в [%d,%d]\n", s+1, start_row, start_col);
-			    
 			    int size = 3 + rand() % 3; // Размер от 3 до 5
 			    for (int i = 0; i < size; i++) {
 			        for (int j = 0; j <= i; j++) {
@@ -229,14 +220,12 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
 			}
 			case SHAPE_SNOWFLAKE: {
 			    printf("%d. Снежинка в [%d,%d]\n", s+1, start_row, start_col);
-			    
 			    // Центральный блок
 			    int center_r = start_row + 2;
 			    int center_c = start_col + 2;
 			    if (center_r < BRICK_ROWS && center_c < BRICK_COLS && !bricks[center_r][center_c].active) {
 			        bricks[center_r][center_c].active = true;
 			    }
-			    
 			    // Лучи (по 3 блока в каждом направлении)
 			    for (int i = 0; i < 3; i++) {
 			        // Верхний луч
@@ -316,7 +305,6 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
     print_bricks_matrix(bricks);
 }
 
-
 void draw_bricks(spi_device_handle_t spi, Brick bricks[BRICK_ROWS][BRICK_COLS]) {
     for (int row = 0; row < BRICK_ROWS; row++) {
         for (int col = 0; col < BRICK_COLS; col++) {
@@ -346,7 +334,6 @@ void show_round_screen(spi_device_handle_t spi, uint16_t round, uint8_t lives, f
     // Базовый текст "РАУНД "
     const uint16_t round_text_prefix[] = {u'Р', u'А', u'У', u'Н', u'Д', u' ', 0};
     draw_text(spi, DISPLAY_WIDTH/2 - 20, DISPLAY_HEIGHT/2 - 20, round_text_prefix, 0xFFFF);
-    
     // Отображение номера раунда (1 или 2 цифры)
     if (round < 10) {
         const uint16_t round_num[] = {u'0' + round, 0};
@@ -356,15 +343,9 @@ void show_round_screen(spi_device_handle_t spi, uint16_t round, uint8_t lives, f
         draw_text(spi, DISPLAY_WIDTH/2 + 15, DISPLAY_HEIGHT/2 - 20, round_num, 0xFFFF);
     }
 
-
-/*    
-    const uint16_t round_text[] = {u'Р', u'А', u'У', u'Н', u'Д', u' ', u'0' + round, 0};
-    draw_text(spi, DISPLAY_WIDTH/2 - 20, DISPLAY_HEIGHT/2 - 20, round_text, 0xFFFF);
-
-*/
     const uint16_t lives_text[] = {u'Ж', u'И', u'З', u'Н', u'И', u':', u'0' + lives, 0};
     draw_text(spi, DISPLAY_WIDTH/2 - 20, DISPLAY_HEIGHT/2, lives_text, 0xFFFF);
-    
+
     vTaskDelay(3000 / portTICK_PERIOD_MS);
 }
 
@@ -372,9 +353,9 @@ void game_arkanoid(spi_device_handle_t spi) {
     unsigned int seed = xTaskGetTickCount();
     printf("Инициализация генератора случайных чисел: seed=%u\n", seed);
     srand(seed);
-    
+
     xStreamBuffer = xStreamBufferCreate(STREAM_BUF_SIZE, sizeof(int));
-    
+
     Brick bricks[BRICK_ROWS][BRICK_COLS];
     GameObject player = {DISPLAY_WIDTH/2 - 20, 230, 40, 10, 0xFFFF};
     GameObject ball = {DISPLAY_WIDTH/2, player.y - 10, 10, 10, 0xFFFF};
@@ -394,6 +375,8 @@ void game_arkanoid(spi_device_handle_t spi) {
 	bool red_button_enabled = true;  // Флаг активности красной кнопки
 	bool game_paused = false;       // Флаг паузы
 
+
+// Не удаляем, требуется для добавлений раундов для увеличения сложности
 /*
     // Первый раунд - стандартное расположение
     for (int row = 0; row < BRICK_ROWS; row++) {
@@ -411,7 +394,7 @@ void game_arkanoid(spi_device_handle_t spi) {
         }
     }
 */
-    
+
     show_round_screen(spi, round, lives, base_speed);
     fill_screen(spi, 0x0000);
     fill_rect(spi, player.x, player.y, player.width, player.height, player.color);
@@ -425,7 +408,7 @@ void game_arkanoid(spi_device_handle_t spi) {
             vTaskDelay(200 / portTICK_PERIOD_MS);
             if (gpio_get_level(BUTTON_WHITE) == 0) {
                 game_paused = !game_paused;
-                
+
                 if (game_paused) {
                     fill_screen(spi, 0x0000);
                     draw_text(spi, DISPLAY_WIDTH/2 - 10, DISPLAY_HEIGHT/2 - 20, 
@@ -438,7 +421,7 @@ void game_arkanoid(spi_device_handle_t spi) {
                     fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
                     draw_bricks(spi, bricks);
                 }
-                
+
                 while (gpio_get_level(BUTTON_WHITE) == 0) {
                     vTaskDelay(50 / portTICK_PERIOD_MS);
                 }
@@ -516,7 +499,6 @@ void game_arkanoid(spi_device_handle_t spi) {
 		    ball.x += (int)ball_speed_x;  // Двигаем мячик вправо/влево
 		    ball.y += (int)ball_speed_y;  // Двигаем мячик вверх/вниз
 
-
             // Обработка столкновений мяча с кирпичами
 			bool brick_hit = false;  // Пока не знаем, попали или нет
 			for (int row = 0; row < BRICK_ROWS; row++) {  // Проверяем все ряды кирпичиков
@@ -529,11 +511,9 @@ void game_arkanoid(spi_device_handle_t spi) {
 			                bricks[row][col].height, 
 			                0})) {
 			            brick_hit = true;  // Ура, попали!
-			                        
                         //  Запоминаем, откуда прилетел мячик
                         float prev_ball_x = ball.x - ball_speed_x; // Где был мячик до удара?
                         float prev_ball_y = ball.y - ball_speed_y;
-                        
 						// Обработка столкновения с кирпичом
 						if (bricks[row][col].unbreakable) {
 						    // Для неразрушаемых блоков просто делаем отскок
@@ -552,7 +532,6 @@ void game_arkanoid(spi_device_handle_t spi) {
                         bool from_top = prev_ball_y + ball.height <= bricks[row][col].y;  // Сверху?
                         bool from_bottom = prev_ball_y >= bricks[row][col].y + bricks[row][col].height;  // Снизу?
 
-
                         // Гибридная система обработки столкновений
                         if (from_left || from_right) {
                             // Горизонтальное столкновение
@@ -563,7 +542,7 @@ void game_arkanoid(spi_device_handle_t spi) {
                             }
                             ball_speed_x = -ball_speed_x; // Меняем направление скорости
                         }
-                        
+
                         if (from_top || from_bottom) {
                             // Вертикальное столкновение
                             if (from_top) {
@@ -580,7 +559,7 @@ void game_arkanoid(spi_device_handle_t spi) {
                             // Используем более мягкую версию углового отскока
                             float dx = (ball.x + ball.width/2) - (bricks[row][col].x + bricks[row][col].width/2);
                             float dy = (ball.y + ball.height/2) - (bricks[row][col].y + bricks[row][col].height/2);
-                            
+
                             if (fabs(dx) > fabs(dy)) {
                                 if (dx > 0) {
                                     ball.x = bricks[row][col].x + bricks[row][col].width + 0.3f;
@@ -641,13 +620,12 @@ void game_arkanoid(spi_device_handle_t spi) {
                 float current_speed = center_speed + (speed_range * speed_factor);
                 ball_speed_x = copysignf(current_speed, hit_norm);
                 ball_speed_y = -(1.25f + speed_factor * 0.75f);
-                
+
                 speed_hits++;
                 if (speed_hits % SPEED_INCREASE_INTERVAL == 0) {
                     base_speed += 0.25f;
                 }
             }
-
 
             // Границы экрана
 			if (ball.y <= 0) {
@@ -658,7 +636,7 @@ void game_arkanoid(spi_device_handle_t spi) {
 			if (ball.x <= 0) {
 			    ball.x = 0;
 			    ball_speed_x = -ball_speed_x;
-			} 
+			}
 			else if (ball.x + ball.width >= DISPLAY_WIDTH) {
 			    ball.x = DISPLAY_WIDTH - ball.width;
 			    ball_speed_x = -ball_speed_x;
@@ -668,12 +646,12 @@ void game_arkanoid(spi_device_handle_t spi) {
             if (ball.y + ball.height >= DISPLAY_HEIGHT) {
                 fill_rect(spi, prev_ball_x, prev_ball_y, ball.width, ball.height, 0x0000);
                 fill_rect(spi, ball.x, ball.y, ball.width, ball.height, 0x0000);
-                
+
                 lives--;
                 fill_rect(spi, DISPLAY_WIDTH - 30, 10, 20, 8, 0x0000);
                 const uint16_t lives_count[] = {u'0' + lives, 0};
                 draw_text(spi, DISPLAY_WIDTH - 30, 10, lives_count, 0xFFFF);
-                
+
                 if (lives > 0) {
                     fill_rect(spi, prev_ball_x, prev_ball_y, ball.width, ball.height, 0x0000);
                     ball.x = player.x + player.width/2 - ball.width/2;
@@ -696,22 +674,18 @@ void game_arkanoid(spi_device_handle_t spi) {
 				    draw_text(spi, DISPLAY_WIDTH/2 - 30, DISPLAY_HEIGHT/2 - 20, game_over, 0xFFFF);
 				    draw_text(spi, DISPLAY_WIDTH/2 - 115, DISPLAY_HEIGHT/2 + 30, 
 				             u"ЧТОБЫ НАЧАТЬ ЗАНОВО НАЖМИТЕ БЕЛУЮ КНОПКУ", 0xFFFF);
-				    
 				    // Ждем нажатия белой кнопки для рестарта
 				    while (gpio_get_level(BUTTON_WHITE) != 0) {
 				        vTaskDelay(50 / portTICK_PERIOD_MS);
 				    }
-
 				    // Сброс игры
 				    lives = 5;
 				    round = 1;
 				    base_speed = 1.5f;
 				    speed_hits = 0;
-				    
 				    // Генерация нового уровня
 				    generate_random_bricks(bricks);
 				    show_round_screen(spi, round, lives, base_speed);
-				    
 				    // Сброс позиций игрока и мяча
 				    player.x = DISPLAY_WIDTH/2 - 20;
 				    ball.x = player.x + player.width/2 - ball.width/2;
@@ -722,43 +696,30 @@ void game_arkanoid(spi_device_handle_t spi) {
 				    ball_speed_y = 0;
 				    ball_active = false;
 				    red_button_enabled = true;
-				    
 				    // Отрисовка начального состояния
 				    fill_screen(spi, 0x0000);
 				    fill_rect(spi, player.x, player.y, player.width, player.height, player.color);
 				    fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
 				    draw_bricks(spi, bricks);
 
-//					game_over = true;
-
-
-/*
-                    const uint16_t game_over[] = {u'К', u'О', u'Н', u'Е', u'Ц', u' ', u'И', u'Г', u'Р', u'Ы', 0};
-                    draw_text(spi, DISPLAY_WIDTH/2 - 20, DISPLAY_HEIGHT/2, game_over, 0xFFFF);
-                    vTaskDelay(3000 / portTICK_PERIOD_MS);
-*/
                 }
             }
             else {
                 if (all_bricks_destroyed(bricks)) {
                     round++;
                     speed_hits = 0;
-                    
                     generate_random_bricks(bricks);
                     show_round_screen(spi, round, lives, base_speed);
-                    
                     player.x = DISPLAY_WIDTH/2 - 20;
                     ball.x = player.x + player.width/2 - ball.width/2;
                     ball.y = player.y - ball.height;
                     prev_ball_x = ball.x;
                     prev_ball_y = ball.y;
                     fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
-
                     ball_speed_x = 0;
                     ball_speed_y = 0;
                     ball_active = false;
                     red_button_enabled = true;
-                    
                     fill_screen(spi, 0x0000);
                     fill_rect(spi, player.x, player.y, player.width, player.height, player.color);
                     fill_rect(spi, ball.x, ball.y, ball.width, ball.height, ball.color);
