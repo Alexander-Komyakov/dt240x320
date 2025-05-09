@@ -12,8 +12,11 @@
 
 
 #define MAX_PLATFORM 20
+#define NEW_PLATFORM 32
 
 typedef struct {
+    uint16_t prev_x;
+    uint8_t prev_y;  
     uint16_t x;
     uint8_t y;  
     uint8_t type;  // 00=обычная, 01=движ, 10=пружина

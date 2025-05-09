@@ -20,15 +20,19 @@ void game_doodle(spi_device_handle_t spi) {
 
     Platform platforms[MAX_PLATFORM];
     for (uint8_t i = 0; i < 10; i++) {
-        platforms[i].x = 10*i;
-        platforms[i].y = 0;
+        platforms[i].x = 32*i;
+        platforms[i].y = 30;
+        platforms[i].prev_x = 32*i;
+        platforms[i].prev_y = 30;
         platforms[i].type = 0;
         platforms[i].visible = 1;
     }
 
     for (uint8_t i = 10; i < MAX_PLATFORM; i++) {
-        platforms[i].x = 10*i;
-        platforms[i].y = 60;
+        platforms[i].x = 32*(i-10);
+        platforms[i].y = 120;
+        platforms[i].prev_x = 32*(i-10);
+        platforms[i].prev_y = 120;
         platforms[i].type = 0;
         platforms[i].visible = 1;
     }
@@ -38,8 +42,11 @@ void game_doodle(spi_device_handle_t spi) {
 
     int received_button;
     uint8_t speed = 3;
-    uint8_t speed_jump = 2;
+    uint8_t speed_jump_up = 2;
+    uint8_t speed_jump_down = 3;
     uint8_t limit_jump = 50;
+
+    uint8_t count_new_platform = 0;
 
     TickType_t xLastWakeTime = xTaskGetTickCount();
     const TickType_t xFrequency = pdMS_TO_TICKS(10);
@@ -63,16 +70,73 @@ void game_doodle(spi_device_handle_t spi) {
                 draw_image(spi, &image_doodle_hero);
             }
         }
+        for (uint8_t i = 0; i < MAX_PLATFORM; i++) {
+            platforms[i].prev_x = platforms[i].x;
+            platforms[i].prev_y = platforms[i].y;
+        }
         if (limit_jump != 0) {
-            image_doodle_hero.x += speed_jump;
-            limit_jump -= speed_jump;
-        } else if (image_doodle_hero.x > 0) {
-            image_doodle_hero.x -= speed_jump;
+            // если дудлик ниже середины экрана
+            if (image_doodle_hero.x <= (DISPLAY_WIDTH / 2)) {
+                image_doodle_hero.x += speed_jump_up;
+            } else {
+                // движение всех платформ вниз
+                for (uint8_t i = 0; i < MAX_PLATFORM; i++) {
+                    if (platforms[i].visible == 1) {
+                        if (platforms[i].x > speed_jump_up) {
+                            platforms[i].x -= speed_jump_up;
+                        } else {
+                            platforms[i].visible = 0;
+                            fill_rect(spi, platforms[i].x, platforms[i].y, image_platform.width, image_platform.height, 0xFFFF);
+                        }
+                    }
+                }
+
+                // генерация новых платформ
+                count_new_platform += speed_jump_up;
+                if (count_new_platform >= NEW_PLATFORM) {
+                    // переиспользуем переменную как счетчик для количества платформ занимаемых
+                    count_new_platform = 0;
+                    // генерируем новые платформы
+                    for (uint8_t i = 0; i < MAX_PLATFORM; i++) {
+                        if (platforms[i].visible == 0) {
+                            count_new_platform += 1;
+                            platforms[i].visible = 1;
+                            platforms[i].x = DISPLAY_WIDTH-image_platform.width;
+                            platforms[i].y = count_new_platform * 60;
+                            if (count_new_platform == 2) {
+                                break;
+                            }
+                        }
+                    }
+                    // сбрасываем счетчик
+                    count_new_platform = 0;
+                }
+            }
+
+            limit_jump -= speed_jump_up;
+        } else if (image_doodle_hero.x - speed_jump_down > 0) {
+            image_doodle_hero.x -= speed_jump_down;
+            // проверка столкновения
+            for (uint8_t i = 0; i < MAX_PLATFORM; i++) {
+                if (image_doodle_hero.y + image_doodle_hero.height > platforms[i].y && 
+                    image_doodle_hero.y < platforms[i].y + image_platform.height) {
+                    if (image_doodle_hero.x + image_doodle_hero.width > platforms[i].y && 
+                        image_doodle_hero.x < platforms[i].x + image_platform.width) {
+                        limit_jump = 80;
+                    }
+                }
+            }
         } else {
             limit_jump = 80;
         }
         for (uint8_t i = 0; i < MAX_PLATFORM; i++) {
-            draw_platform(spi, &platforms[i], &image_platform);
+            if (platforms[i].visible) {
+                if (platforms[i].prev_x != platforms[i].x || 
+                    platforms[i].prev_y != platforms[i].y) {
+                    fill_rect(spi, platforms[i].x + image_platform.width, platforms[i].prev_y, platforms[i].prev_x - platforms[i].x, image_platform.height, 0xFFFF);
+                }
+                draw_platform(spi, &platforms[i], &image_platform);
+            }
         }
         draw_image(spi, &image_doodle_hero);
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
