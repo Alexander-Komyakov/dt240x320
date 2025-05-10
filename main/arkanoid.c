@@ -6,13 +6,6 @@ const uint16_t brick_colors[BRICK_ROWS] = {
     0xF81F, 0x07FF, 0xAFE5, 0xFF07
 };
 
-static bool is_colliding(GameObject a, GameObject b) {
-    return (a.x < b.x + b.width &&
-            a.x + a.width > b.x &&
-            a.y < b.y + b.height &&
-            a.y + a.height > b.y);
-}
-
 void print_bricks_matrix(Brick bricks[BRICK_ROWS][BRICK_COLS]) {
     printf("Матрица кирпичей:\n");
     for (int row = 0; row < BRICK_ROWS; row++) {
@@ -504,12 +497,9 @@ void game_arkanoid(spi_device_handle_t spi) {
 			for (int row = 0; row < BRICK_ROWS; row++) {  // Проверяем все ряды кирпичиков
 			    for (int col = 0; col < BRICK_COLS; col++) {  // Проверяем все кирпичики в ряду
 			        if (bricks[row][col].active &&  // Если кирпичик есть...
-			            is_colliding(ball, (GameObject){  // ...и мячик его задел
-			                bricks[row][col].x, 
-			                bricks[row][col].y, 
-			                bricks[row][col].width, 
-			                bricks[row][col].height, 
-			                0})) {
+                        check_collision_rect(ball.x, ball.y, ball.width, ball.height,
+                                             bricks[row][col].x, bricks[row][col].y,
+                                             bricks[row][col].width, bricks[row][col].height)) {
 			            brick_hit = true;  // Ура, попали!
                         //  Запоминаем, откуда прилетел мячик
                         float prev_ball_x = ball.x - ball_speed_x; // Где был мячик до удара?
@@ -609,7 +599,8 @@ void game_arkanoid(spi_device_handle_t spi) {
                 continue; // Пропускаем остальную обработку для этого кадра
             }
 
-            if (is_colliding(player, ball)) {
+            if (check_collision_rect(player.x, player.y, player.width, player.height,
+                                     ball.x, ball.y, ball.width, ball.height)) {
                 ball.y = player.y - ball.height;
                 int hit_pixel = (ball.x + ball.width/2) - (player.x + player.width/2);
                 float hit_norm = (float)hit_pixel / (player.width/2.0f);
