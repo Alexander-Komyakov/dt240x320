@@ -118,10 +118,13 @@ void game_doodle(spi_device_handle_t spi) {
             image_doodle_hero.x -= speed_jump_down;
             // проверка столкновения
             for (uint8_t i = 0; i < MAX_PLATFORM; i++) {
-                if (image_doodle_hero.y + image_doodle_hero.height > platforms[i].y && 
-                    image_doodle_hero.y < platforms[i].y + image_platform.height) {
-                    if (image_doodle_hero.x + image_doodle_hero.width > platforms[i].y && 
-                        image_doodle_hero.x < platforms[i].x + image_platform.width) {
+                // 3 - белая рамка картинки
+                // 7 - отступ от края до ноги дудлика
+                // 18 - отступ от края до ноги со стороны носа
+                if (image_doodle_hero.y + image_doodle_hero.height - 18 > platforms[i].y && 
+                    image_doodle_hero.y + 7 < platforms[i].y + image_platform.height) {
+                    if (image_doodle_hero.x + image_doodle_hero.width - 3 > platforms[i].y && 
+                        image_doodle_hero.x + 3 < platforms[i].x + image_platform.width) {
                         limit_jump = 80;
                     }
                 }
