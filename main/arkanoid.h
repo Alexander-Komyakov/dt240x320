@@ -62,4 +62,3 @@ void generate_random_bricks(Brick bricks[BRICK_ROWS][BRICK_COLS]);
 void draw_bricks(spi_device_handle_t spi, Brick bricks[BRICK_ROWS][BRICK_COLS]);
 bool all_bricks_destroyed(Brick bricks[BRICK_ROWS][BRICK_COLS]);
 void show_round_screen(spi_device_handle_t spi, uint16_t round, uint8_t lives, float speed);
-bool check_collision(GameObject a, GameObject b);
