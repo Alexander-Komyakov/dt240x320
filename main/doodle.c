@@ -121,13 +121,16 @@ void game_doodle(spi_device_handle_t spi) {
                 // 3 - белая рамка картинки
                 // 7 - отступ от края до ноги дудлика
                 // 18 - отступ от края до ноги со стороны носа
-                if (image_doodle_hero.y + image_doodle_hero.height - 18 > platforms[i].y && 
-                    image_doodle_hero.y + 7 < platforms[i].y + image_platform.height) {
-                    if (image_doodle_hero.x + image_doodle_hero.width - 3 > platforms[i].y && 
-                        image_doodle_hero.x + 3 < platforms[i].x + image_platform.width) {
+                if (check_collision_rect(image_doodle_hero.x, image_doodle_hero.y + 7, image_doodle_hero.width - 3, image_doodle_hero.height - 18,
+                                platforms[i].x, platforms[i].y, image_platform.width, image_platform.height))
                         limit_jump = 80;
-                    }
-                }
+                //if (image_doodle_hero.y + 7 image_doodle_hero.height - 11 > platforms[i].y && 
+                //    image_doodle_hero.y + 7 < platforms[i].y + image_platform.height) {
+                //    if (image_doodle_hero.x + image_doodle_hero.width - 3 > platforms[i].y && 
+                //        image_doodle_hero.x < platforms[i].x + image_platform.width - 3) {
+                //        limit_jump = 80;
+                //    }
+                //}
             }
         } else {
             limit_jump = 80;
