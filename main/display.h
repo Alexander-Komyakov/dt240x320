@@ -51,4 +51,4 @@ void draw_image_part(spi_device_handle_t spi, const Image *my_image,
                     uint16_t src_x, uint16_t src_y,
                     uint16_t part_width, uint16_t part_height);
 void draw_border(spi_device_handle_t spi, const Image *my_image, uint8_t border_size, uint16_t color);
-void draw_image_composite(spi_device_handle_t spi, const Image *main_image, const Image *overlap_images[], uint8_t overlap_count);
+void draw_image_composite(spi_device_handle_t spi, const Image *main_image, const Image *overlap_images, uint8_t overlap_count);

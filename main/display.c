@@ -2,7 +2,7 @@
 #include "spi.h"
 
 
-void draw_image_composite(spi_device_handle_t spi, const Image *main_image, const Image *overlap_images[], uint8_t overlap_count) {
+void draw_image_composite(spi_device_handle_t spi, const Image *main_image, const Image *overlap_images, uint8_t overlap_count) {
     send_command(spi, CMD_COLUMN);
     uint8_t col_data[4] = {
         main_image->x >> 8,
@@ -39,33 +39,35 @@ void draw_image_composite(spi_device_handle_t spi, const Image *main_image, cons
 
     memcpy(dma_buffer, main_image->pixels, main_image->size_image * sizeof(uint16_t));
 
-    for (uint8_t i = 0; i < overlap_count; i++) {
-        const Image *overlap = overlap_images[i];
 
+    for (uint8_t i = 0; i < overlap_count; i++) {
+        const Image* overlap = &overlap_images[i]; // Важно: берём текущий элемент
+        
         // Вычисляем область пересечения
         int16_t x_start = MAX(main_image->x, overlap->x);
         int16_t x_end = MIN(main_image->x + main_image->width, overlap->x + overlap->width);
         int16_t y_start = MAX(main_image->y, overlap->y);
         int16_t y_end = MIN(main_image->y + main_image->height, overlap->y + overlap->height);
-
-        // Пропускаем невалидные пересечения
+    
         if (x_start >= x_end || y_start >= y_end) continue;
-
-        // Накладываем пиксели
+    
         for (int16_t y = y_start; y < y_end; y++) {
             for (int16_t x = x_start; x < x_end; x++) {
-                // Координаты относительно main_image
                 uint16_t main_x = x - main_image->x;
                 uint16_t main_y = y - main_image->y;
-
-                // Координаты относительно overlap
+                uint16_t main_idx = main_y * main_image->width + main_x;
+                
                 uint16_t overlap_x = x - overlap->x;
                 uint16_t overlap_y = y - overlap->y;
-
-                // Заменяем только прозрачные пиксели (0x0000)
-                if (dma_buffer[main_y * main_image->width + main_x] == 0x0000) {
-                    dma_buffer[main_y * main_image->width + main_x] =
-                        overlap->pixels[overlap_y * overlap->width + overlap_x];
+                
+                // Полная проверка границ:
+                if (overlap_x < overlap->width && 
+                    overlap_y < overlap->height &&
+                    (overlap_y * overlap->width + overlap_x) < overlap->size_image) 
+                {
+                    if (dma_buffer[main_idx] == 0xFFFF) {
+                        dma_buffer[main_idx] = overlap->pixels[overlap_y * overlap->width + overlap_x];
+                    }
                 }
             }
         }

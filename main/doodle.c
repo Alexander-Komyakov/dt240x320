@@ -59,7 +59,6 @@ void game_doodle(spi_device_handle_t spi) {
                 } else {
                     image_doodle_hero.y = DISPLAY_HEIGHT + 15;
                 }
-                draw_image(spi, &image_doodle_hero);
             }
             else if (received_button == BUTTON_DOWN) {
                 if (image_doodle_hero.y + speed < DISPLAY_HEIGHT + 15) {
@@ -67,7 +66,6 @@ void game_doodle(spi_device_handle_t spi) {
                 } else {
                     image_doodle_hero.y = 0;
                 }
-                draw_image(spi, &image_doodle_hero);
             }
         }
         for (uint8_t i = 0; i < MAX_PLATFORM; i++) {
@@ -137,7 +135,36 @@ void game_doodle(spi_device_handle_t spi) {
                 draw_platform(spi, &platforms[i], &image_platform);
             }
         }
-        draw_image(spi, &image_doodle_hero);
+        
+        // Проверка столкновений с платформами для прозрачности
+        uint8_t overlap_count = 0;
+        // пересечение максимум с 6 платформами
+        Image *overlap_images = (Image*)malloc(4*sizeof(Image));
+        if (!overlap_images) {
+            perror("malloc failed");
+        }
+        for (uint8_t i = 0; i < MAX_PLATFORM; i++) {
+            if(!platforms[i].visible) continue;
+            if (check_collision_rect(image_doodle_hero.x, image_doodle_hero.y, image_doodle_hero.width, image_doodle_hero.height,
+                                     platforms[i].x, platforms[i].y, image_platform.width, image_platform.height)) {
+                overlap_images[overlap_count++] = (Image){
+                    .x = platforms[i].x,
+                    .y = platforms[i].y,
+                    .width = image_platform.width,
+                    .height = image_platform.height,
+                    .size_image = image_platform.size_image,
+                    .pixels = image_platform.pixels
+                };
+            }
+            if(overlap_count >= MAX_PLATFORM) break;
+        }
+        if (overlap_count == 0) {
+            draw_image(spi, &image_doodle_hero);
+        } else {
+            draw_image_composite(spi, &image_doodle_hero, overlap_images, overlap_count);
+        }
+        draw_image_composite(spi, &image_doodle_hero, overlap_images, overlap_count);
+        free(overlap_images);
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
     }
 }
