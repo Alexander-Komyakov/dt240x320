@@ -163,7 +163,6 @@ void game_doodle(spi_device_handle_t spi) {
         } else {
             draw_image_composite(spi, &image_doodle_hero, overlap_images, overlap_count);
         }
-        draw_image_composite(spi, &image_doodle_hero, overlap_images, overlap_count);
         free(overlap_images);
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
     }
