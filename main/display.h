@@ -13,6 +13,12 @@
 #include "doodle_preview.h"
 #include "platform.h"
 #include "doodle_hero.h"
+#include "sonic1.h"
+#include "sonic2.h"
+#include "sonic3.h"
+#include "sonic4.h"
+#include "sonic5.h"
+#include "sonic6.h"
 #include "arkanoid_preview.h"
 #include "spi.h"
 
