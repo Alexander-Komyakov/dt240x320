@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include <sys/param.h> 
+#include <sys/param.h>
 #include "driver/spi_master.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -19,6 +19,8 @@
 #include "sonic4.h"
 #include "sonic5.h"
 #include "sonic6.h"
+#include "fighter1.h"
+#include "fighter2.h"
 #include "arkanoid_preview.h"
 #include "spi.h"
 

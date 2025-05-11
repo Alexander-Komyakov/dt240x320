@@ -21,4 +21,6 @@ idf_component_register(SRCS "main.c"
                        SRCS "sonic4.c"
                        SRCS "sonic5.c"
                        SRCS "sonic6.c"
+					   SRCS "fighter1.c"
+					   SRCS "fighter2.c"
                     INCLUDE_DIRS ".")

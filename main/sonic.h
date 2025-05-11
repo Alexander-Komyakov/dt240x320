@@ -13,4 +13,15 @@
 #include <math.h>
 #include "font.h"
 
+
+//#ifndef SONIC_H
+//#define SONIC_H
+
+//#include "spi_handle.h"
+
 void sonic(spi_device_handle_t spi);
+
+//#endif
+
+
+
