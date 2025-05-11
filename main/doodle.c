@@ -22,8 +22,8 @@ void game_doodle(spi_device_handle_t spi) {
     for (uint8_t i = 0; i < 10; i++) {
         platforms[i].x = 32*i;
         platforms[i].y = 30;
-        platforms[i].prev_x = 32*i;
-        platforms[i].prev_y = 30;
+        platforms[i].prev_x = 32*i-3;
+        platforms[i].prev_y = 27;
         platforms[i].type = 0;
         platforms[i].visible = 1;
     }
@@ -31,8 +31,8 @@ void game_doodle(spi_device_handle_t spi) {
     for (uint8_t i = 10; i < MAX_PLATFORM; i++) {
         platforms[i].x = 32*(i-10);
         platforms[i].y = 120;
-        platforms[i].prev_x = 32*(i-10);
-        platforms[i].prev_y = 120;
+        platforms[i].prev_x = 32*(i-10)-3;
+        platforms[i].prev_y = 117;
         platforms[i].type = 0;
         platforms[i].visible = 1;
     }
@@ -47,9 +47,9 @@ void game_doodle(spi_device_handle_t spi) {
     uint8_t limit_jump = 50;
 
     uint8_t count_new_platform = 0;
+    uint8_t overlap_count = 0;
+    uint8_t i;
 
-    TickType_t xLastWakeTime = xTaskGetTickCount();
-    const TickType_t xFrequency = pdMS_TO_TICKS(10);
     while (1) {
         // Обработка ввода игрока
         if (xStreamBufferReceive(xStreamBuffer, &received_button, sizeof(received_button), 0) > 0) {
@@ -68,17 +68,13 @@ void game_doodle(spi_device_handle_t spi) {
                 }
             }
         }
-        for (uint8_t i = 0; i < MAX_PLATFORM; i++) {
-            platforms[i].prev_x = platforms[i].x;
-            platforms[i].prev_y = platforms[i].y;
-        }
         if (limit_jump != 0) {
             // если дудлик ниже середины экрана
             if (image_doodle_hero.x <= (DISPLAY_WIDTH / 2)) {
                 image_doodle_hero.x += speed_jump_up;
             } else {
                 // движение всех платформ вниз
-                for (uint8_t i = 0; i < MAX_PLATFORM; i++) {
+                for (i = 0; i < MAX_PLATFORM; i++) {
                     if (platforms[i].visible == 1) {
                         if (platforms[i].x > speed_jump_up) {
                             platforms[i].x -= speed_jump_up;
@@ -95,7 +91,7 @@ void game_doodle(spi_device_handle_t spi) {
                     // переиспользуем переменную как счетчик для количества платформ занимаемых
                     count_new_platform = 0;
                     // генерируем новые платформы
-                    for (uint8_t i = 0; i < MAX_PLATFORM; i++) {
+                    for (i = 0; i < MAX_PLATFORM; i++) {
                         if (platforms[i].visible == 0) {
                             count_new_platform += 1;
                             platforms[i].visible = 1;
@@ -110,12 +106,11 @@ void game_doodle(spi_device_handle_t spi) {
                     count_new_platform = 0;
                 }
             }
-
             limit_jump -= speed_jump_up;
         } else if (image_doodle_hero.x - speed_jump_down > 0) {
             image_doodle_hero.x -= speed_jump_down;
             // проверка столкновения
-            for (uint8_t i = 0; i < MAX_PLATFORM; i++) {
+            for (i = 0; i < MAX_PLATFORM; i++) {
                 // 3 - белая рамка картинки
                 // 7 - отступ от края до ноги дудлика
                 // 18 - отступ от края до ноги со стороны носа
@@ -126,25 +121,25 @@ void game_doodle(spi_device_handle_t spi) {
         } else {
             limit_jump = 80;
         }
-        for (uint8_t i = 0; i < MAX_PLATFORM; i++) {
-            if (platforms[i].visible) {
-                if (platforms[i].prev_x != platforms[i].x || 
-                    platforms[i].prev_y != platforms[i].y) {
-                    fill_rect(spi, platforms[i].x + image_platform.width, platforms[i].prev_y, platforms[i].prev_x - platforms[i].x, image_platform.height, 0xFFFF);
-                }
-                draw_platform(spi, &platforms[i], &image_platform);
-            }
+        for (i = 0; i < MAX_PLATFORM; i++) {
         }
         
         // Проверка столкновений с платформами для прозрачности
-        uint8_t overlap_count = 0;
+        overlap_count = 0;
         // пересечение максимум с 6 платформами
         Image *overlap_images = (Image*)malloc(4*sizeof(Image));
         if (!overlap_images) {
             perror("malloc failed");
         }
-        for (uint8_t i = 0; i < MAX_PLATFORM; i++) {
-            if(!platforms[i].visible) continue;
+        for (i = 0; i < MAX_PLATFORM; i++) {
+            if (platforms[i].visible) {
+                if (platforms[i].prev_x != platforms[i].x || 
+                    platforms[i].prev_y != platforms[i].y) {
+                    draw_platform(spi, &platforms[i], &image_platform);
+                }
+            } else {
+                continue;
+            }
             if (check_collision_rect(image_doodle_hero.x, image_doodle_hero.y, image_doodle_hero.width, image_doodle_hero.height,
                                      platforms[i].x, platforms[i].y, image_platform.width, image_platform.height)) {
                 overlap_images[overlap_count++] = (Image){
@@ -163,7 +158,11 @@ void game_doodle(spi_device_handle_t spi) {
         } else {
             draw_image_composite(spi, &image_doodle_hero, overlap_images, overlap_count);
         }
+        for (i = 0; i < MAX_PLATFORM; i++) {
+            platforms[i].prev_x = platforms[i].x;
+            platforms[i].prev_y = platforms[i].y;
+        }
         free(overlap_images);
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+        vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
