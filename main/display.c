@@ -2,6 +2,76 @@
 #include "spi.h"
 
 
+void draw_image_composite_slave(spi_device_handle_t spi, const Image *main_image, const Image *overlap_images) {
+    send_command(spi, CMD_COLUMN);
+    uint8_t col_data[4] = {
+        main_image->x >> 8,
+        main_image->x & 0xFF,
+        (main_image->x + main_image->width - 1) >> 8,
+        (main_image->x + main_image->width - 1) & 0xFF
+    };
+    send_data(spi, col_data, 4);
+
+    send_command(spi, CMD_ROW);
+    uint8_t row_data[4] = {
+        0,
+        main_image->y & 0xFF,
+        0,
+        ((main_image->y + main_image->height) > DISPLAY_HEIGHT)
+            ? (main_image->height - (DISPLAY_HEIGHT - main_image->y)) & 0xFF
+            : (main_image->y + main_image->height) & 0xFF
+    };
+
+    send_data(spi, row_data, 4);
+
+    send_command(spi, CMD_SET_PIXEL);
+
+    // Создаем DMA буфер
+    uint16_t *dma_buffer = heap_caps_malloc(
+        main_image->size_image * sizeof(uint16_t),
+        MALLOC_CAP_DMA | MALLOC_CAP_32BIT
+    );
+    // Проверяем доступность памяти 
+    if (!dma_buffer) {
+        ESP_LOGE("DMA", "Не хватило памяти!");
+        return;
+    }
+
+    memcpy(dma_buffer, main_image->pixels, main_image->size_image * sizeof(uint16_t));
+
+    // Вычисляем область пересечения
+    int16_t x_start = MAX(main_image->x, overlap_images->x);
+    int16_t x_end = MIN(main_image->x + main_image->width, overlap_images->x + overlap_images->width);
+    int16_t y_start = MAX(main_image->y, overlap_images->y);
+    int16_t y_end = MIN(main_image->y + main_image->height, overlap_images->y + overlap_images->height);
+    
+    if (x_start >= x_end || y_start >= y_end) return;
+    
+    for (int16_t y = y_start; y < y_end; y++) {
+        for (int16_t x = x_start; x < x_end; x++) {
+            uint16_t main_x = x - main_image->x;
+            uint16_t main_y = y - main_image->y;
+            uint16_t main_idx = main_y * main_image->width + main_x;
+            
+            uint16_t overlap_x = x - overlap_images->x;
+            uint16_t overlap_y = y - overlap_images->y;
+            
+            // Полная проверка границ:
+            if (overlap_x < overlap_images->width && 
+                overlap_y < overlap_images->height &&
+                (overlap_y * overlap_images->width + overlap_x) < overlap_images->size_image) 
+            {
+                if (overlap_images->pixels[overlap_y * overlap_images->width + overlap_x] != 0xFFFF) {
+                    dma_buffer[main_idx] = overlap_images->pixels[overlap_y * overlap_images->width + overlap_x];
+                }
+            }
+        }
+    }
+
+    send_data16b(spi, dma_buffer, main_image->size_image);
+    free(dma_buffer);
+}
+
 void draw_image_composite(spi_device_handle_t spi, const Image *main_image, const Image *overlap_images, uint8_t overlap_count) {
     send_command(spi, CMD_COLUMN);
     uint8_t col_data[4] = {

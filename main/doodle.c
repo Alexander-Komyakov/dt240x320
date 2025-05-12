@@ -112,9 +112,6 @@ void game_doodle(spi_device_handle_t spi) {
         } else {
             limit_jump = 80;
         }
-        for (i = 0; i < MAX_PLATFORM; i++) {
-        }
-        
         // Проверка столкновений с платформами для прозрачности
         overlap_count = 0;
         // пересечение максимум с 6 платформами
@@ -123,12 +120,7 @@ void game_doodle(spi_device_handle_t spi) {
             perror("malloc failed");
         }
         for (i = 0; i < MAX_PLATFORM; i++) {
-            if (platforms[i].visible) {
-                if (platforms[i].prev_x != platforms[i].x || 
-                    platforms[i].prev_y != platforms[i].y) {
-                    draw_platform(spi, &platforms[i], &image_platform);
-                }
-            } else {
+            if (!platforms[i].visible) {
                 continue;
             }
             if (check_collision_rect(image_doodle_hero.x, image_doodle_hero.y, image_doodle_hero.width, image_doodle_hero.height,
@@ -141,6 +133,20 @@ void game_doodle(spi_device_handle_t spi) {
                     .size_image = image_platform.size_image,
                     .pixels = image_platform.pixels
                 };
+                // если столкнулись, то рисуем платформу за игроком
+                draw_image_composite_slave(spi, &overlap_images[overlap_count-1], &image_doodle_hero);
+            } else if (platforms[i].prev_x != platforms[i].x || 
+                       platforms[i].prev_y != platforms[i].y) {
+                // если не столкнулись и платформа сдвинулась, то просто рисуем
+                Image temp_image = {
+                    .x = platforms[i].x,      
+                    .y = platforms[i].y,
+                    .width = image_platform.width,
+                    .height = image_platform.height,
+                    .size_image = image_platform.size_image,
+                    .pixels = image_platform.pixels
+                };  
+                draw_image(spi, &temp_image);
             }
             if(overlap_count >= MAX_PLATFORM) break;
         }
