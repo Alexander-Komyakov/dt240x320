@@ -12,7 +12,7 @@
 #include <stdio.h>
 
 
-#define MAX_PLATFORM 20
+#define MAX_PLATFORM 10
 #define NEW_PLATFORM 32
 
 typedef struct {

@@ -18,21 +18,13 @@ void draw_platform(spi_device_handle_t spi, const Platform* p,
 void game_doodle(spi_device_handle_t spi) {
     xStreamBuffer = xStreamBufferCreate(STREAM_BUF_SIZE, sizeof(int));
 
+    uint8_t i;
     Platform platforms[MAX_PLATFORM];
-    for (uint8_t i = 0; i < 10; i++) {
+    for (i = 0; i < 10; i++) {
         platforms[i].x = 32*i;
         platforms[i].y = 30;
         platforms[i].prev_x = 32*i-3;
         platforms[i].prev_y = 27;
-        platforms[i].type = 0;
-        platforms[i].visible = 1;
-    }
-
-    for (uint8_t i = 10; i < MAX_PLATFORM; i++) {
-        platforms[i].x = 32*(i-10);
-        platforms[i].y = 120;
-        platforms[i].prev_x = 32*(i-10)-3;
-        platforms[i].prev_y = 117;
         platforms[i].type = 0;
         platforms[i].visible = 1;
     }
@@ -48,7 +40,6 @@ void game_doodle(spi_device_handle_t spi) {
 
     uint8_t count_new_platform = 0;
     uint8_t overlap_count = 0;
-    uint8_t i;
 
     while (1) {
         // Обработка ввода игрока
@@ -115,7 +106,7 @@ void game_doodle(spi_device_handle_t spi) {
                 // 7 - отступ от края до ноги дудлика
                 // 18 - отступ от края до ноги со стороны носа
                 if (check_collision_rect(image_doodle_hero.x, image_doodle_hero.y + 7, image_doodle_hero.width - 3, image_doodle_hero.height - 18,
-                                platforms[i].x, platforms[i].y, image_platform.width, image_platform.height))
+                                platforms[i].x+8, platforms[i].y+15, image_platform.width-3, image_platform.height-21))
                         limit_jump = 80;
             }
         } else {
