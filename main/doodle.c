@@ -17,6 +17,7 @@ void draw_platform(spi_device_handle_t spi, const Platform* p,
 
 void game_doodle(spi_device_handle_t spi) {
     xStreamBuffer = xStreamBufferCreate(STREAM_BUF_SIZE, sizeof(int));
+    srand(xTaskGetTickCount());
 
     uint8_t i;
     Platform platforms[MAX_PLATFORM];
@@ -49,10 +50,13 @@ void game_doodle(spi_device_handle_t spi) {
     uint8_t speed = 3;
     uint8_t speed_jump_up = 2;
     uint8_t speed_jump_down = 3;
-    uint8_t limit_jump = 50;
+    uint8_t limit_jump = 60;
 
     uint8_t count_new_platform = 0;
     uint8_t overlap_count = 0;
+
+    // счетчик пустых линий платформ для генератора
+    uint8_t count_zero_platform = 0;
 
     while (1) {
         // Обработка ввода игрока
@@ -91,17 +95,32 @@ void game_doodle(spi_device_handle_t spi) {
 
                 // генерация новых платформ
                 count_new_platform += speed_jump_up;
+                uint8_t rand_count_platform = rand() % 100;
+                rand_count_platform = (rand_count_platform < 10) ? 1 : (rand_count_platform < 20) ? 2: 0;
+                count_zero_platform = rand_count_platform == 0 ? count_zero_platform + 1 : 0;
+                if (count_zero_platform >= 3) {
+                    rand_count_platform = 1;
+                    count_zero_platform = 0;
+                }
+                printf("rand count: %d\n", rand_count_platform);
                 if (count_new_platform >= NEW_PLATFORM) {
                     // переиспользуем переменную как счетчик для количества платформ занимаемых
                     count_new_platform = 0;
                     // генерируем новые платформы
                     for (i = 0; i < MAX_PLATFORM; i++) {
                         if (platforms[i].visible == 0) {
+                            printf("count new: %d\n", count_new_platform);
+                            uint8_t r = rand() % 100;
                             count_new_platform += 1;
                             platforms[i].visible = 1;
                             platforms[i].x = DISPLAY_WIDTH-image_platform.width;
                             platforms[i].y = count_new_platform * 60;
-                            if (count_new_platform == 2) {
+                            if (count_new_platform == 0) {
+                                platforms[i].type = (r < 70) ? 0 : ((r < 80) ? (rand() % 2 + 1) : 3);
+                            } else {
+                                platforms[i].type = (r < 80) ? 0 : 3;
+                            }
+                            if (count_new_platform == rand_count_platform) {
                                 break;
                             }
                         }
@@ -116,11 +135,12 @@ void game_doodle(spi_device_handle_t spi) {
             // проверка столкновения
             for (i = 0; i < MAX_PLATFORM; i++) {
                 // 3 - белая рамка картинки
+                // 8 размер ног
                 // 7 - отступ от края до ноги дудлика
                 // 18 - отступ от края до ноги со стороны носа
-                if (check_collision_rect(image_doodle_hero.x, image_doodle_hero.y + 7, image_doodle_hero.width - 3, image_doodle_hero.height - 18,
+                if (check_collision_rect(image_doodle_hero.x+3, image_doodle_hero.y + 7, 8, image_doodle_hero.height - 18,
                                 platforms[i].x+8, platforms[i].y+15, image_platform.width-12, image_platform.height-21)) {
-                    limit_jump = 80;
+                    limit_jump = 90;
                     if (platforms[i].type == 3) {
                         platforms[i].visible = 0;
                         fill_rect(spi, platforms[i].x, platforms[i].y, image_platform.width, image_platform.height, 0xFFFF);
@@ -128,15 +148,12 @@ void game_doodle(spi_device_handle_t spi) {
                 }
             }
         } else {
-            limit_jump = 80;
+            limit_jump = 90;
         }
         // Проверка столкновений с платформами для прозрачности
         overlap_count = 0;
-        // пересечение максимум с 6 платформами
-        Image *overlap_images = (Image*)malloc(4*sizeof(Image));
-        if (!overlap_images) {
-            perror("malloc failed");
-        }
+        // пересечение максимум с 4 платформами
+        Image overlap_images[4];
         for (i = 0; i < MAX_PLATFORM; i++) {
             if (!platforms[i].visible) {
                 continue;
@@ -200,7 +217,6 @@ void game_doodle(spi_device_handle_t spi) {
             platforms[i].prev_x = platforms[i].x;
             platforms[i].prev_y = platforms[i].y;
         }
-        free(overlap_images);
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }

@@ -13,7 +13,7 @@
 
 
 #define MAX_PLATFORM 10
-#define NEW_PLATFORM 32
+#define NEW_PLATFORM 60
 
 typedef struct {
     uint16_t prev_x;
