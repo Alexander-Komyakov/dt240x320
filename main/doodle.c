@@ -20,14 +20,27 @@ void game_doodle(spi_device_handle_t spi) {
 
     uint8_t i;
     Platform platforms[MAX_PLATFORM];
-    for (i = 0; i < 10; i++) {
+    for (i = 0; i < 8; i++) {
         platforms[i].x = 32*i;
         platforms[i].y = 30;
         platforms[i].prev_x = 32*i-3;
-        platforms[i].prev_y = 27;
+        platforms[i].prev_y = 30;
         platforms[i].type = 0;
         platforms[i].visible = 1;
     }
+    platforms[8].x = 32*8;
+    platforms[8].y = 30;
+    platforms[8].prev_x = 32*8-3;
+    platforms[8].prev_y = 30;
+    platforms[8].type = 3;
+    platforms[8].visible = 1;
+
+    platforms[9].x = 32*9;
+    platforms[9].y = 30;
+    platforms[9].prev_x = 32*9-3;
+    platforms[9].prev_y = 30;
+    platforms[9].type = 1;
+    platforms[9].visible = 1;
 
     fill_screen(spi, 0xFFFF);
     draw_image(spi, &image_doodle_hero);
@@ -106,8 +119,13 @@ void game_doodle(spi_device_handle_t spi) {
                 // 7 - отступ от края до ноги дудлика
                 // 18 - отступ от края до ноги со стороны носа
                 if (check_collision_rect(image_doodle_hero.x, image_doodle_hero.y + 7, image_doodle_hero.width - 3, image_doodle_hero.height - 18,
-                                platforms[i].x+8, platforms[i].y+15, image_platform.width-3, image_platform.height-21))
-                        limit_jump = 80;
+                                platforms[i].x+8, platforms[i].y+15, image_platform.width-12, image_platform.height-21)) {
+                    limit_jump = 80;
+                    if (platforms[i].type == 3) {
+                        platforms[i].visible = 0;
+                        fill_rect(spi, platforms[i].x, platforms[i].y, image_platform.width, image_platform.height, 0xFFFF);
+                    }
+                }
             }
         } else {
             limit_jump = 80;
@@ -123,6 +141,19 @@ void game_doodle(spi_device_handle_t spi) {
             if (!platforms[i].visible) {
                 continue;
             }
+            if (platforms[i].type == 1) {
+                if (platforms[i].y < DISPLAY_HEIGHT-image_platform.height)
+                    platforms[i].y += 2;
+                else {
+                    platforms[i].type = 2;
+                }
+            } else if (platforms[i].type == 2) {
+                if (platforms[i].y >= 2) {
+                    platforms[i].y -= 2;
+                } else {
+                    platforms[i].type = 1;
+                }
+            }
             if (check_collision_rect(image_doodle_hero.x, image_doodle_hero.y, image_doodle_hero.width, image_doodle_hero.height,
                                      platforms[i].x, platforms[i].y, image_platform.width, image_platform.height)) {
                 overlap_images[overlap_count++] = (Image){
@@ -134,6 +165,11 @@ void game_doodle(spi_device_handle_t spi) {
                     .pixels = image_platform.pixels
                 };
                 // если столкнулись, то рисуем платформу за игроком
+                if (platforms[i].type == 3) {
+                    overlap_images[overlap_count-1].pixels = image_platform_white.pixels;
+                } else if (platforms[i].type == 1 || platforms[i].type == 2) {
+                    overlap_images[overlap_count-1].pixels = image_platform_blue.pixels;
+                }
                 draw_image_composite_slave(spi, &overlap_images[overlap_count-1], &image_doodle_hero);
             } else if (platforms[i].prev_x != platforms[i].x || 
                        platforms[i].prev_y != platforms[i].y) {
@@ -146,6 +182,11 @@ void game_doodle(spi_device_handle_t spi) {
                     .size_image = image_platform.size_image,
                     .pixels = image_platform.pixels
                 };  
+                if (platforms[i].type == 3) {
+                    temp_image.pixels = image_platform_white.pixels;
+                } else if (platforms[i].type == 1 || platforms[i].type == 2) {
+                    temp_image.pixels = image_platform_blue.pixels;
+                }
                 draw_image(spi, &temp_image);
             }
             if(overlap_count >= MAX_PLATFORM) break;

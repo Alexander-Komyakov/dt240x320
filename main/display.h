@@ -12,6 +12,8 @@
 #include "pong_preview.h"
 #include "doodle_preview.h"
 #include "platform.h"
+#include "platform_blue.h"
+#include "platform_white.h"
 #include "doodle_hero.h"
 #include "sonic1.h"
 #include "sonic2.h"

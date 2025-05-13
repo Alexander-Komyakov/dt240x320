@@ -26,4 +26,3 @@ typedef struct {
 
 
 void game_doodle(spi_device_handle_t spi);
-void draw_platform(spi_device_handle_t spi, const Platform* p, const Image* platform_normal);
