@@ -14,14 +14,20 @@
 #include "font.h"
 
 
-//#ifndef SONIC_H
-//#define SONIC_H
+// Константы позиций спрайтов
+#define FIGHTER_X 10
+#define FIGHTER_Y 50
+#define SONIC_X 70
+#define SONIC_Y 50
+#define PIKACHU_X 140
+#define PIKACHU_Y 50
 
-//#include "spi_handle.h"
+// Белый цвет
+#define TRANSPARENT_COLOR 0xFFFF
+
 
 void sonic(spi_device_handle_t spi);
 
-//#endif
 
 
 
