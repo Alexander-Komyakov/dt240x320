@@ -25,6 +25,7 @@
 #include "fighter2.h"
 #include "pikachu1.h"
 #include "pikachu2.h"
+#include "background.h"
 #include "arkanoid_preview.h"
 #include "spi.h"
 

@@ -38,11 +38,23 @@ void draw_composite_scene(spi_device_handle_t spi) {
     init_composite_buffer(scene_width, scene_height);
     if (!composite_buffer) return;
 
-    // Заполняем фоном (белый цвет)
-    memset(composite_buffer, 0xFF, scene_width * scene_height * sizeof(uint16_t));
-
 	// В указанных циклах рисование происходит поочередно.
 	// Это значит что чтобы отобразить передний слой, нужно указывать писать его в конце.
+
+    // Заполняем фоном (из background)
+    for (int16_t y = 0; y < scene_height; y++) {
+        for (int16_t x = 0; x < scene_width; x++) {
+            int16_t bg_x = scene_left + x;
+            int16_t bg_y = scene_top + y;
+            if (bg_x >= 0 && bg_x < DISPLAY_WIDTH && bg_y >= 0 && bg_y < DISPLAY_HEIGHT) {
+                composite_buffer[y * scene_width + x] = image_background.pixels[bg_y * DISPLAY_WIDTH + bg_x];
+            } else {
+                composite_buffer[y * scene_width + x] = 0xFFFF; // Белый цвет для областей вне экрана чтобы задник песонажей был прозрачный
+            }
+        }
+    }
+
+
 
     // Рисуем pikachu (нижний слой)
     for (int16_t y = 0; y < current_pikachu.height; y++) {
@@ -54,6 +66,7 @@ void draw_composite_scene(spi_device_handle_t spi) {
                 if (scene_x >= 0 && scene_x < scene_width && 
                     scene_y >= 0 && scene_y < scene_height) {
                     composite_buffer[scene_y * scene_width + scene_x] = pixel;
+
                 }
             }
         }
@@ -88,7 +101,6 @@ void draw_composite_scene(spi_device_handle_t spi) {
             }
         }
     }
-
 
     // Отправляем на дисплей всю сцену целиком
     send_command(spi, CMD_COLUMN);
@@ -168,7 +180,8 @@ void sonic(spi_device_handle_t spi) {
     send_command(spi, CMD_MADCTL);
     send_data(spi, &madctl_value, 1);
 
-    fill_screen(spi, 0xFFFF);
+//    fill_screen(spi, 0xFFFF);
+	draw_image(spi, &image_background);
 
     // Запускаем одну задачу вместо двух
     xTaskCreate(task_animation, "animation_task", 4096, spi, 1, NULL);

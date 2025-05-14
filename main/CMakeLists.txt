@@ -27,4 +27,5 @@ idf_component_register(SRCS "main.c"
 					   SRCS "fighter2.c"
 					   SRCS "pikachu1.c"
 					   SRCS "pikachu2.c"
+					   SRCS "background.c"
                     INCLUDE_DIRS ".")
