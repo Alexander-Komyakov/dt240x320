@@ -23,6 +23,8 @@
 #include "sonic6.h"
 #include "fighter1.h"
 #include "fighter2.h"
+#include "pikachu1.h"
+#include "pikachu2.h"
 #include "arkanoid_preview.h"
 #include "spi.h"
 

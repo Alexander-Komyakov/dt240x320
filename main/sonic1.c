@@ -1403,8 +1403,8 @@ const uint16_t image_sonic1_pixels[14000] = {
 0x3084, 0x3084, 0x3084, 0x3084, 0x9294, 0x54A5, 0x38C6, 0x3CE7, 0x9EF7, 0xFFFF, 
 };
 Image image_sonic1 = {
-    .x = 110,
-    .y = 50,
+    .x = 0,
+    .y = 0,
     .width = 100,
     .height = 140,
     .size_image = 14000,

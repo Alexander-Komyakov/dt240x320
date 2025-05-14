@@ -4,6 +4,7 @@
 // Глобальные переменные
 Image current_fighter = {.x = 10, .y = 50};
 Image current_sonic = {.x = 70, .y = 50};
+Image current_pikachu = {.x = 140, .y = 50};
 #define TRANSPARENT_COLOR 0xFFFF
 
 // Буфер для композитного изображения
@@ -23,13 +24,27 @@ void init_composite_buffer(uint16_t width, uint16_t height) {
 // Функция композитной отрисовки обоих объектов
 void draw_composite_scene(spi_device_handle_t spi) {
     // Определяем границы всей сцены
+
+    // Определяем границы всей сцены
+    int16_t scene_left = MIN(current_fighter.x, MIN(current_sonic.x, current_pikachu.x));
+    int16_t scene_right = MAX(current_fighter.x + current_fighter.width, 
+                            MAX(current_sonic.x + current_sonic.width,
+                               current_pikachu.x + current_pikachu.width));
+    int16_t scene_top = MIN(current_fighter.y, MIN(current_sonic.y, current_pikachu.y));
+    int16_t scene_bottom = MAX(current_fighter.y + current_fighter.height, 
+                             MAX(current_sonic.y + current_sonic.height,
+                                current_pikachu.y + current_pikachu.height));
+
+
+/*
     int16_t scene_left = MIN(current_fighter.x, current_sonic.x);
     int16_t scene_right = MAX(current_fighter.x + current_fighter.width, 
                             current_sonic.x + current_sonic.width);
     int16_t scene_top = MIN(current_fighter.y, current_sonic.y);
     int16_t scene_bottom = MAX(current_fighter.y + current_fighter.height, 
                              current_sonic.y + current_sonic.height);
-    
+*/
+
     uint16_t scene_width = scene_right - scene_left;
     uint16_t scene_height = scene_bottom - scene_top;
     
@@ -40,6 +55,26 @@ void draw_composite_scene(spi_device_handle_t spi) {
     // Заполняем фоном (белый цвет)
     memset(composite_buffer, 0xFF, scene_width * scene_height * sizeof(uint16_t));
     
+
+
+// В указанных циклах рисование происходит поочередно.
+// Это значит что чтобы отобразить передний слой, нужно указывать писать его в конце.
+
+    // Рисуем pikachu (нижний слой)
+    for (int16_t y = 0; y < current_pikachu.height; y++) {
+        for (int16_t x = 0; x < current_pikachu.width; x++) {
+            uint16_t pixel = current_pikachu.pixels[y * current_pikachu.width + x];
+            if (pixel != TRANSPARENT_COLOR) {
+                int16_t scene_x = current_pikachu.x - scene_left + x;
+                int16_t scene_y = current_pikachu.y - scene_top + y;
+                if (scene_x >= 0 && scene_x < scene_width && 
+                    scene_y >= 0 && scene_y < scene_height) {
+                    composite_buffer[scene_y * scene_width + scene_x] = pixel;
+                }
+            }
+        }
+    }
+
     // Рисуем sonic (нижний слой)
     for (int16_t y = 0; y < current_sonic.height; y++) {
         for (int16_t x = 0; x < current_sonic.width; x++) {
@@ -69,6 +104,8 @@ void draw_composite_scene(spi_device_handle_t spi) {
             }
         }
     }
+
+
     
     // Отправляем на дисплей всю сцену целиком
     send_command(spi, CMD_COLUMN);
@@ -99,9 +136,12 @@ void task_animation(void *pvParameters) {
     const Image *fighter_frames[] = {&image_fighter1, &image_fighter2};
     const Image *sonic_frames[] = {&image_sonic1, &image_sonic2, &image_sonic3, 
                                   &image_sonic4, &image_sonic5, &image_sonic6};
+    const Image *pikachu_frames[] = {&image_pikachu1, &image_pikachu2};
+
     
     uint8_t fighter_frame = 0;
     uint8_t sonic_frame = 0;
+	uint8_t pikachu_frame = 0;
     
     while (1) {
         // Обновляем кадры
@@ -112,6 +152,11 @@ void task_animation(void *pvParameters) {
         current_sonic = *sonic_frames[sonic_frame];
         current_sonic.x = 70;
         current_sonic.y = 50;
+
+		current_pikachu = *pikachu_frames[pikachu_frame];
+        current_pikachu.x = 140;
+        current_pikachu.y = 50;
+
         
         // Рисуем всю сцену
         draw_composite_scene(spi);
@@ -119,6 +164,7 @@ void task_animation(void *pvParameters) {
         // Переключаем кадры
         fighter_frame = (fighter_frame + 1) % 2;
         sonic_frame = (sonic_frame + 1) % 6;
+		pikachu_frame = (pikachu_frame + 1) % 2;
         
         vTaskDelay(100 / portTICK_PERIOD_MS);
     }

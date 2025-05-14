@@ -1403,8 +1403,8 @@ const uint16_t image_fighter1_pixels[14000] = {
 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 
 };
 Image image_fighter1 = {
-    .x = 0,
-    .y = 0,
+	.x = 0,
+	.y = 0,
     .width = 100,
     .height = 140,
     .size_image = 14000,
