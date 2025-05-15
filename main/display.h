@@ -26,6 +26,11 @@
 #include "pikachu1.h"
 #include "pikachu2.h"
 #include "background.h"
+#include "fighter_move1.h"
+#include "fighter_move2.h"
+#include "fighter_move3.h"
+#include "fighter_move4.h"
+#include "fighter_move5.h"
 #include "arkanoid_preview.h"
 #include "spi.h"
 

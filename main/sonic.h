@@ -28,6 +28,9 @@
 
 void sonic(spi_device_handle_t spi);
 
-
-
+// Прототипы функций
+static void init_composite_buffer(uint16_t width, uint16_t height);
+static void draw_character(const Image *character);
+static void prepare_composite_frame(uint16_t scroll_offset);
+static void rotate_display(spi_device_handle_t spi, uint16_t speed);
 

@@ -76,10 +76,7 @@ void rotate_display(spi_device_handle_t spi, uint16_t speed) {
 // Задача анимации
 void task_animation(void *pvParameters) {
     spi_device_handle_t spi = (spi_device_handle_t)pvParameters;
-// Сделать переменну move и shot для fighter
-	const Image *fighter_frames[] = {&image_fighter_move1, &image_fighter_move2, &image_fighter_move3,
-									&image_fighter_move4, &image_fighter_move5};
-//    const Image *fighter_frames[] = {&image_fighter1, &image_fighter2};
+    const Image *fighter_frames[] = {&image_fighter1, &image_fighter2};
 //    const Image *sonic_frames[] = {&image_sonic1, &image_sonic2, &image_sonic3, 
 //                                  &image_sonic4, &image_sonic5, &image_sonic6};
 //    const Image *pikachu_frames[] = {&image_pikachu1, &image_pikachu2};
@@ -113,7 +110,7 @@ void task_animation(void *pvParameters) {
 
         // Переключаем кадры анимации
 //        for (int i = 0; i < 3; i++) {
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < 1; i++) {
             frames[i] = (frames[i] + 1) % frame_counts[i];
         }
 
