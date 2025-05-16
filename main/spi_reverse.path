@@ -1,0 +1,4 @@
+40c40
+<         .clock_speed_hz = 40000000,
+---
+>         .clock_speed_hz = SPI_MASTER_FREQ_20M,
