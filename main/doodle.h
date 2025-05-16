@@ -12,8 +12,8 @@
 #include <stdio.h>
 
 
-#define MAX_PLATFORM 10
-#define NEW_PLATFORM 60
+#define MAX_PLATFORM 20
+#define NEW_PLATFORM 20
 
 typedef struct {
     uint16_t prev_x;

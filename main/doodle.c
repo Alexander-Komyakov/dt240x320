@@ -21,7 +21,7 @@ void game_doodle(spi_device_handle_t spi) {
 
     uint8_t i;
     Platform platforms[MAX_PLATFORM];
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < 10; i++) {
         platforms[i].x = 32*i;
         platforms[i].y = 30;
         platforms[i].prev_x = 32*i-3;
@@ -29,19 +29,14 @@ void game_doodle(spi_device_handle_t spi) {
         platforms[i].type = 0;
         platforms[i].visible = 1;
     }
-    platforms[8].x = 32*8;
-    platforms[8].y = 30;
-    platforms[8].prev_x = 32*8-3;
-    platforms[8].prev_y = 30;
-    platforms[8].type = 3;
-    platforms[8].visible = 1;
-
-    platforms[9].x = 32*9;
-    platforms[9].y = 30;
-    platforms[9].prev_x = 32*9-3;
-    platforms[9].prev_y = 30;
-    platforms[9].type = 1;
-    platforms[9].visible = 1;
+    for (i = 10; i < 20; i++) {
+        platforms[i].x = 0;
+        platforms[i].y = 0;
+        platforms[i].prev_x = 0;
+        platforms[i].prev_y = 0;
+        platforms[i].type = 0;
+        platforms[i].visible = 0;
+    }
 
     fill_screen(spi, 0xFFFF);
     draw_image(spi, &image_doodle_hero);
@@ -95,34 +90,34 @@ void game_doodle(spi_device_handle_t spi) {
 
                 // генерация новых платформ
                 count_new_platform += speed_jump_up;
-                uint8_t rand_count_platform = rand() % 100;
-                rand_count_platform = (rand_count_platform < 10) ? 1 : (rand_count_platform < 20) ? 2: 0;
-                count_zero_platform = rand_count_platform == 0 ? count_zero_platform + 1 : 0;
-                if (count_zero_platform >= 3) {
-                    rand_count_platform = 1;
-                    count_zero_platform = 0;
-                }
-                printf("rand count: %d\n", rand_count_platform);
+                uint8_t rand_count_platform = 0;
+                uint8_t rand_type_platform = 0;
                 if (count_new_platform >= NEW_PLATFORM) {
-                    // переиспользуем переменную как счетчик для количества платформ занимаемых
+                    rand_count_platform = rand() % 100;
+                    rand_count_platform = (rand_count_platform < 10) ? 1 : (rand_count_platform < 20) ? 2: 0;
+                    count_zero_platform = rand_count_platform == 0 ? count_zero_platform + 1     : 0;
+                    if (count_zero_platform >= 3) {
+                        rand_count_platform = 1;
+                        count_zero_platform = 0;
+                    }
                     count_new_platform = 0;
+                    printf("Запущена генерация нового слоя\n");
                     // генерируем новые платформы
                     for (i = 0; i < MAX_PLATFORM; i++) {
+                        if (count_new_platform == rand_count_platform) {
+                            break;
+                        }
                         if (platforms[i].visible == 0) {
-                            printf("count new: %d\n", count_new_platform);
-                            uint8_t r = rand() % 100;
                             count_new_platform += 1;
+                            rand_type_platform = rand() % 100;
+                            if (rand_count_platform == 1) {
+                                platforms[i].type = (rand_type_platform < 30) ? 0 : ((rand_type_platform < 90) ? 2 : 3);
+                            } else {
+                                platforms[i].type = (rand_type_platform < 60) ? 0 : 3;
+                            }
                             platforms[i].visible = 1;
                             platforms[i].x = DISPLAY_WIDTH-image_platform.width;
-                            platforms[i].y = count_new_platform * 60;
-                            if (count_new_platform == 0) {
-                                platforms[i].type = (r < 70) ? 0 : ((r < 80) ? (rand() % 2 + 1) : 3);
-                            } else {
-                                platforms[i].type = (r < 80) ? 0 : 3;
-                            }
-                            if (count_new_platform == rand_count_platform) {
-                                break;
-                            }
+                            platforms[i].y = 60 * count_new_platform;
                         }
                     }
                     // сбрасываем счетчик
@@ -152,8 +147,8 @@ void game_doodle(spi_device_handle_t spi) {
         }
         // Проверка столкновений с платформами для прозрачности
         overlap_count = 0;
-        // пересечение максимум с 4 платформами
-        Image overlap_images[4];
+        // пересечение максимум с 6 платформами
+        Image overlap_images[6];
         for (i = 0; i < MAX_PLATFORM; i++) {
             if (!platforms[i].visible) {
                 continue;
