@@ -205,7 +205,7 @@ void sonic(spi_device_handle_t spi) {
     send_command(spi, CMD_DISPLAY_ON);
     send_command(spi, CMD_NORMAL_MODE);
 
-    uint8_t madctl_value = 0xB0;
+    uint8_t madctl_value = 0x60;
     send_command(spi, CMD_MADCTL);
     send_data(spi, &madctl_value, 1);
 
