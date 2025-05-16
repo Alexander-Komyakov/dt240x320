@@ -77,120 +77,71 @@ void task_animation(void *pvParameters) {
     
     // Анимационные кадры
     const Image *fighter_idle_frames[] = {&image_fighter_stay1};
-    const Image *fighter_move_frames[] = {&image_fighter_move1, &image_fighter_move2,
-                                        &image_fighter_move3, &image_fighter_move4,
-                                        &image_fighter_move5};
-    const Image *fighter_shot_frames[] = {&image_fighter_shot1};
-//, &image_fighter_shot2};
-
-    // Состояние персонажа
-    typedef enum {
-        STATE_IDLE,
-        STATE_MOVING,
-        STATE_SHOOTING
-    } FighterState;
-    
-    FighterState current_state = STATE_IDLE;
-    bool left_pressed = false;
-    bool right_pressed = false;
-    bool red_button_pressed = false;
-    bool red_button_enabled = true;
+    const Image *fighter_move_frames[] = {&image_fighter_move1, &image_fighter_move2, 
+                                        &image_fighter_move3, &image_fighter_move4, &image_fighter_move5};
     
     uint8_t current_frame = 0;
+    bool is_moving = false;
     uint8_t frame_counter = 0;
-    const uint8_t move_frame_delay = 1;
-    const uint8_t shot_frame_delay = 1;
+    const uint8_t frame_delay = 1; // Задержка между сменой кадров анимации
 
-    // Позиция и движение
+    // Позиция и управление
     uint16_t fighter_x = FIGHTER_X;
     uint16_t fighter_y = FIGHTER_Y;
-    const uint8_t move_speed = 5;
-    uint16_t scroll_speed = 0;
-    const uint16_t moving_scroll_speed = 6;
+    const uint8_t move_speed = 3; // Было 3
+    int received_button = 0;
+    uint16_t scroll_speed = 0; // Скорость прокрутки фона (0 когда стоим)
 
     // Инициализация буфера
     init_composite_buffer(DISPLAY_WIDTH, DISPLAY_HEIGHT);
 
     while (1) {
-        // 1. Проверяем состояние кнопок
-        left_pressed = (gpio_get_level(BUTTON_LEFT) == 0);
-        right_pressed = (gpio_get_level(BUTTON_RIGHT) == 0);
-        red_button_pressed = (gpio_get_level(BUTTON_RED) == 0) && red_button_enabled;
-
-        // 2. Обработка состояний
-        if (red_button_pressed && current_state != STATE_SHOOTING) {
-            // Начало анимации удара
-            current_state = STATE_SHOOTING;
-            current_frame = 0;
-            frame_counter = 0;
-            red_button_enabled = false;
-        }
-        else if (current_state == STATE_SHOOTING) {
-            // Продолжаем анимацию удара
-            if (frame_counter++ >= shot_frame_delay) {
-                frame_counter = 0;
-                current_frame++;
-                
-                if (current_frame >= sizeof(fighter_shot_frames)/sizeof(fighter_shot_frames[0])) {
-                    // Завершение анимации удара
-                    current_state = STATE_IDLE;
-                    current_frame = 0;
-                    red_button_enabled = true;
-                }
-            }
-        } 
-        else if (left_pressed || right_pressed) {
-            // Движение
-            current_state = STATE_MOVING;
-            
-            if (left_pressed) {
+        // Обработка ввода
+        if (xStreamBufferReceive(xStreamBuffer, &received_button, sizeof(received_button), 0) > 0) {
+            if (received_button == BUTTON_LEFT) {
                 fighter_x = (fighter_x > move_speed) ? fighter_x - move_speed : 0;
-                scroll_speed = moving_scroll_speed;
+                is_moving = true;
+                scroll_speed = 3; // Вращаем экран при движении
             }
-            else if (right_pressed) {
-                fighter_x = (fighter_x < DISPLAY_WIDTH - fighter_move_frames[0]->width - move_speed) 
-                          ? fighter_x + move_speed 
-                          : DISPLAY_WIDTH - fighter_move_frames[0]->width;
-                scroll_speed = moving_scroll_speed;
+            else if (received_button == BUTTON_RIGHT) {
+                fighter_x = (fighter_x < DISPLAY_WIDTH - fighter_move_frames[0]->width - move_speed) ? 
+                           fighter_x + move_speed : DISPLAY_WIDTH - fighter_move_frames[0]->width;
+                is_moving = true;
+                scroll_speed = 3; // Вращаем экран при движении
             }
-            
-            if (frame_counter++ >= move_frame_delay) {
+            else {
+                is_moving = false;
+                scroll_speed = 0; // Останавливаем вращение
+            }
+        } else {
+            is_moving = false;
+            scroll_speed = 0; // Останавливаем вращение
+        }
+
+        // Выбор анимации в зависимости от состояния
+        if (is_moving) {
+            // Анимация движения
+            if (frame_counter++ >= frame_delay) {
                 frame_counter = 0;
-                current_frame = (current_frame + 1) % (sizeof(fighter_move_frames)/sizeof(fighter_move_frames[0]));
+                current_frame = (current_frame + 1) % (sizeof(fighter_move_frames)/sizeof(fighter_move_frames[0])); // Исправлено - добавлена закрывающая скобка
             }
-        }
-        else {
-            // Стояние
-            current_state = STATE_IDLE;
-            scroll_speed = 0;
-            current_frame = 0;
-            frame_counter = 0;
+            current_fighter = *fighter_move_frames[current_frame];
+        } else {
+            // Анимация стояния
+            current_fighter = *fighter_idle_frames[0];
         }
 
-        // 3. Выбор текущего кадра анимации
-        switch (current_state) {
-            case STATE_SHOOTING:
-                current_fighter = *fighter_shot_frames[current_frame];
-                break;
-            case STATE_MOVING:
-                current_fighter = *fighter_move_frames[current_frame];
-                break;
-            case STATE_IDLE:
-            default:
-                current_fighter = *fighter_idle_frames[0];
-                break;
-        }
-
-        // 4. Установка позиции персонажа
+        // Установка позиции
         current_fighter.x = fighter_x;
         current_fighter.y = fighter_y;
 
-        // 5. Вращение экрана (если есть движение)
-        rotate_display(spi, (current_state == STATE_MOVING) ? scroll_speed : 0);
+        // Вращаем экран (если scroll_speed > 0)
+        rotate_display(spi, scroll_speed);
 
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
+
 
 void sonic(spi_device_handle_t spi) {
     init_gpio_display();

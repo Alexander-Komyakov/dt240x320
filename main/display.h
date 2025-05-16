@@ -21,8 +21,8 @@
 #include "sonic4.h"
 #include "sonic5.h"
 #include "sonic6.h"
-#include "fighter1.h"
-#include "fighter2.h"
+#include "fighter_shot1.h"
+#include "fighter_shot2.h"
 #include "pikachu1.h"
 #include "pikachu2.h"
 #include "background.h"
@@ -31,6 +31,7 @@
 #include "fighter_move3.h"
 #include "fighter_move4.h"
 #include "fighter_move5.h"
+#include "fighter_stay1.h"
 #include "arkanoid_preview.h"
 #include "spi.h"
 
