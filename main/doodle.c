@@ -23,9 +23,9 @@ void game_doodle(spi_device_handle_t spi) {
     Platform platforms[MAX_PLATFORM];
     for (i = 0; i < 10; i++) {
         platforms[i].x = 32*i;
-        platforms[i].y = 30;
+        platforms[i].y = rand() % 184;
         platforms[i].prev_x = 32*i-3;
-        platforms[i].prev_y = 30;
+        platforms[i].prev_y = 0;
         platforms[i].type = 0;
         platforms[i].visible = 1;
     }
@@ -101,7 +101,6 @@ void game_doodle(spi_device_handle_t spi) {
                         count_zero_platform = 0;
                     }
                     count_new_platform = 0;
-                    printf("Запущена генерация нового слоя\n");
                     // генерируем новые платформы
                     for (i = 0; i < MAX_PLATFORM; i++) {
                         if (count_new_platform == rand_count_platform) {
@@ -112,12 +111,15 @@ void game_doodle(spi_device_handle_t spi) {
                             rand_type_platform = rand() % 100;
                             if (rand_count_platform == 1) {
                                 platforms[i].type = (rand_type_platform < 30) ? 0 : ((rand_type_platform < 90) ? 2 : 3);
+                                // DISPLAY_HEIGHT / 2 - image_platform.height (240/2) - 56 = 184
+                                platforms[i].y = rand() % 184;
                             } else {
+                                // Левая или правая части экрана
                                 platforms[i].type = (rand_type_platform < 60) ? 0 : 3;
+                                platforms[i].y = (rand() % 64) + (120*(count_new_platform-1));
                             }
                             platforms[i].visible = 1;
                             platforms[i].x = DISPLAY_WIDTH-image_platform.width;
-                            platforms[i].y = 60 * count_new_platform;
                         }
                     }
                     // сбрасываем счетчик
