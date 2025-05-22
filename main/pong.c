@@ -68,9 +68,9 @@ restart_game:
                     // Отрисовка меню паузы
                     fill_screen(spi, 0x0000);
                     draw_text(spi, DISPLAY_WIDTH/2 - 10, DISPLAY_HEIGHT/2 - 20, 
-                             u"ПАУЗА", 0xFFFF);
+                             u"ПАУЗА", 0xFFFF, 0);
                     draw_text(spi, DISPLAY_WIDTH/2 - 115, DISPLAY_HEIGHT/2 + 30, 
-                             u"ЧТОБЫ ПРОДОЛЖИТЬ НАЖМИТЕ БЕЛУЮ КНОПКУ", 0xFFFF);
+                             u"ЧТОБЫ ПРОДОЛЖИТЬ НАЖМИТЕ БЕЛУЮ КНОПКУ", 0xFFFF, 0);
                 } else {
                     // Восстановление игры - перерисовываем все объекты
                     fill_screen(spi, 0x0000);
@@ -186,7 +186,7 @@ restart_game:
             else player_score++;
 
             fill_screen(spi, 0x0000);
-            draw_text(spi, DISPLAY_WIDTH/2 - 30, DISPLAY_HEIGHT/2 - 10, u"СЧЕТ ", 0xFFFF);
+            draw_text(spi, DISPLAY_WIDTH/2 - 30, DISPLAY_HEIGHT/2 - 10, u"СЧЕТ ", 0xFFFF, 0);
 
             // Формируем текст для игрока
             if (player_score >= 100) p_text[p_pos++] = u'0' + (player_score / 100);
@@ -200,8 +200,8 @@ restart_game:
             b_text[b_pos++] = u'0' + (bot_score % 10);
             b_text[b_pos] = 0;
 
-            draw_text(spi, DISPLAY_WIDTH/2 + 10, DISPLAY_HEIGHT/2 - 10, p_text, 0xFFFF);
-            draw_text(spi, DISPLAY_WIDTH/2 + 30, DISPLAY_HEIGHT/2 - 10, b_text, 0xFFFF);
+            draw_text(spi, DISPLAY_WIDTH/2 + 10, DISPLAY_HEIGHT/2 - 10, p_text, 0xFFFF, 0);
+            draw_text(spi, DISPLAY_WIDTH/2 + 30, DISPLAY_HEIGHT/2 - 10, b_text, 0xFFFF, 0);
             p_pos = 0, b_pos = 0;
             vTaskDelay(1000 / portTICK_PERIOD_MS);
 
@@ -211,8 +211,8 @@ restart_game:
                 fill_screen(spi, 0x0000);
                 // Поражение
                 if (bot_score > player_score) {
-                    draw_text(spi, DISPLAY_WIDTH/2 - 40, DISPLAY_HEIGHT/2 - 20, u"ВЫ ПРОИГРАЛИ", 0xF800);
-                    draw_text(spi, DISPLAY_WIDTH/2 - 120, DISPLAY_HEIGHT/2 + 10, u"НАЖМИТЕ КРАСНУЮ КНОПКУ ДЛЯ ПЕРЕЗАПУСКА ИГРЫ", 0xFFFF);
+                    draw_text(spi, DISPLAY_WIDTH/2 - 40, DISPLAY_HEIGHT/2 - 20, u"ВЫ ПРОИГРАЛИ", 0xF800, 0);
+                    draw_text(spi, DISPLAY_WIDTH/2 - 120, DISPLAY_HEIGHT/2 + 10, u"НАЖМИТЕ КРАСНУЮ КНОПКУ ДЛЯ ПЕРЕЗАПУСКА ИГРЫ", 0xFFFF, 0);
                     // Ожидание нажатия кнопки RED
                     while (1) {
                         if (gpio_get_level(BUTTON_RED) == 0) {
@@ -226,20 +226,20 @@ restart_game:
                     }
                 }
                 else if (player_score == 10 && level == 0) {
-                    draw_text(spi, DISPLAY_WIDTH/2 - 40, DISPLAY_HEIGHT/2 - 20, u"СРЕДНЯЯ СЛОЖНОСТЬ", 0x07E0);
+                    draw_text(spi, DISPLAY_WIDTH/2 - 40, DISPLAY_HEIGHT/2 - 20, u"СРЕДНЯЯ СЛОЖНОСТЬ", 0x07E0, 0);
                     vTaskDelay(1000 / portTICK_PERIOD_MS);
                     bot_reaction_speed = 3;
                     bot_attack_speed = 3;
                     level = 1;
                 } else if (player_score == 25 && level == 1) {
-                    draw_text(spi, DISPLAY_WIDTH/2 - 40, DISPLAY_HEIGHT/2 - 20, u"ВЫСОКАЯ СЛОЖНОСТЬ", 0x07E0);
+                    draw_text(spi, DISPLAY_WIDTH/2 - 40, DISPLAY_HEIGHT/2 - 20, u"ВЫСОКАЯ СЛОЖНОСТЬ", 0x07E0, 0);
                     vTaskDelay(1000 / portTICK_PERIOD_MS);
                     speed = 4;
                     bot_reaction_speed = 4;
                     bot_attack_speed = 4;
                     level = 2;
                 } else if (player_score == 40 && level == 2) {
-                    draw_text(spi, DISPLAY_WIDTH/2 - 50, DISPLAY_HEIGHT/2 - 20, u"НЕВОЗМОЖНАЯ СЛОЖНОСТЬ", 0x07E0);
+                    draw_text(spi, DISPLAY_WIDTH/2 - 50, DISPLAY_HEIGHT/2 - 20, u"НЕВОЗМОЖНАЯ СЛОЖНОСТЬ", 0x07E0, 0);
                     vTaskDelay(1000 / portTICK_PERIOD_MS);
                     speed = 5;
                     bot_reaction_speed = 5;

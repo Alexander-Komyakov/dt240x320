@@ -53,6 +53,8 @@ void game_doodle(spi_device_handle_t spi) {
     // счетчик пустых линий платформ для генератора
     uint8_t count_zero_platform = 0;
 
+    uint16_t death_limit = DISPLAY_WIDTH;
+
     while (1) {
         // Обработка ввода игрока
         if (xStreamBufferReceive(xStreamBuffer, &received_button, sizeof(received_button), 0) > 0) {
@@ -145,7 +147,23 @@ void game_doodle(spi_device_handle_t spi) {
                 }
             }
         } else {
-            limit_jump = 90;
+            // смерть
+            limit_jump = 0;
+            if (death_limit <= 5) {
+                draw_text(spi, DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2, u"ВЫ 0 ПРОИГРАЛИ", 0xCCCC, 1);
+            } else {
+                death_limit -= 3;
+                for (i = 0; i < MAX_PLATFORM; i++) {
+                    if (platforms[i].visible == 1) {
+                        if (platforms[i].x < DISPLAY_WIDTH-image_platform.width) {
+                            platforms[i].x += 3;
+                        } else {
+                            platforms[i].visible = 0;
+                            fill_rect(spi, DISPLAY_WIDTH-image_platform.width, platforms[i].y, image_platform.width, image_platform.height, 0xFFFF);
+                        }
+                    }
+                }
+            }
         }
         // Проверка столкновений с платформами для прозрачности
         overlap_count = 0;

@@ -326,18 +326,18 @@ void show_round_screen(spi_device_handle_t spi, uint16_t round, uint8_t lives, f
 
     // Базовый текст "РАУНД "
     const uint16_t round_text_prefix[] = {u'Р', u'А', u'У', u'Н', u'Д', u' ', 0};
-    draw_text(spi, DISPLAY_WIDTH/2 - 20, DISPLAY_HEIGHT/2 - 20, round_text_prefix, 0xFFFF);
+    draw_text(spi, DISPLAY_WIDTH/2 - 20, DISPLAY_HEIGHT/2 - 20, round_text_prefix, 0xFFFF, 0);
     // Отображение номера раунда (1 или 2 цифры)
     if (round < 10) {
         const uint16_t round_num[] = {u'0' + round, 0};
-        draw_text(spi, DISPLAY_WIDTH/2 + 15, DISPLAY_HEIGHT/2 - 20, round_num, 0xFFFF);
+        draw_text(spi, DISPLAY_WIDTH/2 + 15, DISPLAY_HEIGHT/2 - 20, round_num, 0xFFFF, 0);
     } else {
         const uint16_t round_num[] = {u'0' + (round / 10), u'0' + (round % 10), 0};
-        draw_text(spi, DISPLAY_WIDTH/2 + 15, DISPLAY_HEIGHT/2 - 20, round_num, 0xFFFF);
+        draw_text(spi, DISPLAY_WIDTH/2 + 15, DISPLAY_HEIGHT/2 - 20, round_num, 0xFFFF, 0);
     }
 
     const uint16_t lives_text[] = {u'Ж', u'И', u'З', u'Н', u'И', u':', u'0' + lives, 0};
-    draw_text(spi, DISPLAY_WIDTH/2 - 20, DISPLAY_HEIGHT/2, lives_text, 0xFFFF);
+    draw_text(spi, DISPLAY_WIDTH/2 - 20, DISPLAY_HEIGHT/2, lives_text, 0xFFFF, 0);
 
     vTaskDelay(3000 / portTICK_PERIOD_MS);
 }
@@ -405,9 +405,9 @@ void game_arkanoid(spi_device_handle_t spi) {
                 if (game_paused) {
                     fill_screen(spi, 0x0000);
                     draw_text(spi, DISPLAY_WIDTH/2 - 10, DISPLAY_HEIGHT/2 - 20, 
-                             u"ПАУЗА", 0xFFFF);
+                             u"ПАУЗА", 0xFFFF, 0);
                     draw_text(spi, DISPLAY_WIDTH/2 - 115, DISPLAY_HEIGHT/2 + 30, 
-                             u"ЧТОБЫ ПРОДОЛЖИТЬ НАЖМИТЕ БЕЛУЮ КНОПКУ", 0xFFFF);
+                             u"ЧТОБЫ ПРОДОЛЖИТЬ НАЖМИТЕ БЕЛУЮ КНОПКУ", 0xFFFF, 0);
                 } else {
                     fill_screen(spi, 0x0000);
                     fill_rect(spi, player.x, player.y, player.width, player.height, player.color);
@@ -641,7 +641,7 @@ void game_arkanoid(spi_device_handle_t spi) {
                 lives--;
                 fill_rect(spi, DISPLAY_WIDTH - 30, 10, 20, 8, 0x0000);
                 const uint16_t lives_count[] = {u'0' + lives, 0};
-                draw_text(spi, DISPLAY_WIDTH - 30, 10, lives_count, 0xFFFF);
+                draw_text(spi, DISPLAY_WIDTH - 30, 10, lives_count, 0xFFFF, 0);
 
                 if (lives > 0) {
                     fill_rect(spi, prev_ball_x, prev_ball_y, ball.width, ball.height, 0x0000);
@@ -662,9 +662,9 @@ void game_arkanoid(spi_device_handle_t spi) {
 				    // Конец игры
 				    fill_screen(spi, 0x0000);
 				    const uint16_t game_over[] = {u'К', u'О', u'Н', u'Е', u'Ц', u' ', u'И', u'Г', u'Р', u'Ы', 0};
-				    draw_text(spi, DISPLAY_WIDTH/2 - 30, DISPLAY_HEIGHT/2 - 20, game_over, 0xFFFF);
+				    draw_text(spi, DISPLAY_WIDTH/2 - 30, DISPLAY_HEIGHT/2 - 20, game_over, 0xFFFF, 0);
 				    draw_text(spi, DISPLAY_WIDTH/2 - 115, DISPLAY_HEIGHT/2 + 30, 
-				             u"ЧТОБЫ НАЧАТЬ ЗАНОВО НАЖМИТЕ БЕЛУЮ КНОПКУ", 0xFFFF);
+				             u"ЧТОБЫ НАЧАТЬ ЗАНОВО НАЖМИТЕ БЕЛУЮ КНОПКУ", 0xFFFF, 0);
 				    // Ждем нажатия белой кнопки для рестарта
 				    while (gpio_get_level(BUTTON_WHITE) != 0) {
 				        vTaskDelay(50 / portTICK_PERIOD_MS);
