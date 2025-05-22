@@ -58,8 +58,7 @@ restart_game:
 
     uint16_t death_limit = DISPLAY_WIDTH;
     uint16_t player_score = 0;
-    save_nvs_u16("doodle", 300);
-    uint16_t player_record = load_nvs_u8("doodle");
+    uint16_t player_record = load_nvs_u16("doodle");
 
     // буфер для отправки числа на экран
     uint16_t p_text[5];
@@ -175,14 +174,15 @@ restart_game:
                     draw_text(spi, DISPLAY_WIDTH/2-10, DISPLAY_HEIGHT/2-39, u"НОВЫЙ РЕКОРД!", 0xCCCC, 1);
                     save_nvs_u16("doodle", player_score);
                 } else {
-                    draw_text(spi, DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2-18, u"РЕКОРД", 0xCCCC, 1);
+                    draw_text(spi, DISPLAY_WIDTH/2-10, DISPLAY_HEIGHT/2-30, u"РЕКОРД", 0xCCCC, 1);
+                    p_pos = 0;
                     if (player_record >= 10000) p_text[p_pos++] = u'0' + (player_record / 10000 % 10);
                     if (player_record >= 1000) p_text[p_pos++] = u'0' + (player_record / 1000 % 10);
                     if (player_record >= 100) p_text[p_pos++] = u'0' + (player_record / 100 % 10);
                     if (player_record >= 10 || p_pos > 0) p_text[p_pos++] = u'0' + ((player_record / 10) % 10);
                     p_text[p_pos++] = u'0' + (player_record % 10);
                     p_text[p_pos] = 0;
-                    draw_text(spi, DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2+30, p_text, 0xCCCC, 1);
+                    draw_text(spi, DISPLAY_WIDTH/2-10, DISPLAY_HEIGHT/2+12, p_text, 0xCCCC, 1);
                 }
                 vTaskDelay(3000 / portTICK_PERIOD_MS);
                 goto restart_game;

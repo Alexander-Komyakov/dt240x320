@@ -3,12 +3,8 @@
 
 
 // Создаём очередь
-//static QueueHandle_t nvs_queue = xQueueCreate(4, sizeof(nvs_data_t));
-//static nvs_handle_t nvs_handle_storage;
-//static QueueHandle_t nvs_queue;
-//static nvs_handle_t nvs_handle_storage;
-QueueHandle_t nvs_queue;
-nvs_handle_t nvs_handle_storage;
+static QueueHandle_t nvs_queue;
+static nvs_handle_t nvs_handle_storage;
 
 void nvs_init() {
     esp_err_t ret;
@@ -26,8 +22,8 @@ void nvs_init() {
 
 void storage_task(void* arg) {
     nvs_init();
+    nvs_data_t data;
     while (1) {
-        nvs_data_t data;
         if (xQueueReceive(nvs_queue, &data, portMAX_DELAY)) {
             if (data.type == 0) {
                 nvs_set_u8(nvs_handle_storage, data.key, data.value.u8);
