@@ -8,7 +8,6 @@
 #include "arkanoid.h"
 #include "sonic.h"
 #include "menu.h"
-#include "saves.h"
 
 
 void app_main(void)
@@ -26,7 +25,7 @@ void app_main(void)
     uint8_t number_game = menu(spi);
     if (number_game == 0) game_pong(spi);
     else if (number_game == 1) game_doodle(spi);
-	else if (number_game == 2) game_arkanoid(spi);
+    else if (number_game == 2) game_arkanoid(spi);
     else if (number_game == 3) sonic(spi);
 }
 

@@ -16,6 +16,7 @@ void draw_platform(spi_device_handle_t spi, const Platform* p,
 }
 
 void game_doodle(spi_device_handle_t spi) {
+restart_game:
     xStreamBuffer = xStreamBufferCreate(STREAM_BUF_SIZE, sizeof(int));
     srand(xTaskGetTickCount());
 
@@ -38,6 +39,8 @@ void game_doodle(spi_device_handle_t spi) {
         platforms[i].visible = 0;
     }
 
+    image_doodle_hero.x = DISPLAY_WIDTH-80;
+    image_doodle_hero.y = DISPLAY_HEIGHT/2;
     fill_screen(spi, 0xFFFF);
     draw_image(spi, &image_doodle_hero);
 
@@ -54,6 +57,13 @@ void game_doodle(spi_device_handle_t spi) {
     uint8_t count_zero_platform = 0;
 
     uint16_t death_limit = DISPLAY_WIDTH;
+    uint16_t player_score = 0;
+    save_nvs_u16("doodle", 300);
+    uint16_t player_record = load_nvs_u8("doodle");
+
+    // буфер для отправки числа на экран
+    uint16_t p_text[5];
+    uint16_t p_pos = 0;
 
     while (1) {
         // Обработка ввода игрока
@@ -78,6 +88,7 @@ void game_doodle(spi_device_handle_t spi) {
             if (image_doodle_hero.x <= (DISPLAY_WIDTH / 2)) {
                 image_doodle_hero.x += speed_jump_up;
             } else {
+                player_score++;
                 // движение всех платформ вниз
                 for (i = 0; i < MAX_PLATFORM; i++) {
                     if (platforms[i].visible == 1) {
@@ -138,7 +149,7 @@ void game_doodle(spi_device_handle_t spi) {
                 // 7 - отступ от края до ноги дудлика
                 // 18 - отступ от края до ноги со стороны носа
                 if (check_collision_rect(image_doodle_hero.x+3, image_doodle_hero.y + 7, 8, image_doodle_hero.height - 18,
-                                platforms[i].x+8, platforms[i].y+15, image_platform.width-12, image_platform.height-21)) {
+                                platforms[i].x+8, platforms[i].y+15, image_platform.width-12, image_platform.height-21) && platforms[i].visible) {
                     limit_jump = 90;
                     if (platforms[i].type == 3) {
                         platforms[i].visible = 0;
@@ -150,7 +161,31 @@ void game_doodle(spi_device_handle_t spi) {
             // смерть
             limit_jump = 0;
             if (death_limit <= 5) {
-                draw_text(spi, DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2, u"ВЫ 0 ПРОИГРАЛИ", 0xCCCC, 1);
+                fill_rect(spi, DISPLAY_WIDTH-30, 0, 30, DISPLAY_HEIGHT, 0xFFFF);
+                draw_text(spi, DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2-24, u"СЧЕТ", 0xCCCC, 1);
+                // Формируем текст для игрока
+                if (player_score >= 10000) p_text[p_pos++] = u'0' + (player_score / 10000 % 10);
+                if (player_score >= 1000) p_text[p_pos++] = u'0' + (player_score / 1000 % 10);
+                if (player_score >= 100) p_text[p_pos++] = u'0' + (player_score / 100 % 10);
+                if (player_score >= 10 || p_pos > 0) p_text[p_pos++] = u'0' + ((player_score / 10) % 10);
+                p_text[p_pos++] = u'0' + (player_score % 10);
+                p_text[p_pos] = 0;
+                draw_text(spi, DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2+6, p_text, 0xCCCC, 1);
+                if (player_score > player_record) {
+                    draw_text(spi, DISPLAY_WIDTH/2-10, DISPLAY_HEIGHT/2-39, u"НОВЫЙ РЕКОРД!", 0xCCCC, 1);
+                    save_nvs_u16("doodle", player_score);
+                } else {
+                    draw_text(spi, DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2-18, u"РЕКОРД", 0xCCCC, 1);
+                    if (player_record >= 10000) p_text[p_pos++] = u'0' + (player_record / 10000 % 10);
+                    if (player_record >= 1000) p_text[p_pos++] = u'0' + (player_record / 1000 % 10);
+                    if (player_record >= 100) p_text[p_pos++] = u'0' + (player_record / 100 % 10);
+                    if (player_record >= 10 || p_pos > 0) p_text[p_pos++] = u'0' + ((player_record / 10) % 10);
+                    p_text[p_pos++] = u'0' + (player_record % 10);
+                    p_text[p_pos] = 0;
+                    draw_text(spi, DISPLAY_WIDTH/2, DISPLAY_HEIGHT/2+30, p_text, 0xCCCC, 1);
+                }
+                vTaskDelay(3000 / portTICK_PERIOD_MS);
+                goto restart_game;
             } else {
                 death_limit -= 3;
                 for (i = 0; i < MAX_PLATFORM; i++) {

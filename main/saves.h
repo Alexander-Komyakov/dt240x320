@@ -11,6 +11,9 @@
 #define MAX_STR_LEN 32
 
 
+extern QueueHandle_t nvs_queue;
+extern nvs_handle_t nvs_handle_storage;
+
 typedef struct {
     char key[16];
     union {

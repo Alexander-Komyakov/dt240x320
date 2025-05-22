@@ -5,8 +5,10 @@
 // Создаём очередь
 //static QueueHandle_t nvs_queue = xQueueCreate(4, sizeof(nvs_data_t));
 //static nvs_handle_t nvs_handle_storage;
-static QueueHandle_t nvs_queue;
-static nvs_handle_t nvs_handle_storage;
+//static QueueHandle_t nvs_queue;
+//static nvs_handle_t nvs_handle_storage;
+QueueHandle_t nvs_queue;
+nvs_handle_t nvs_handle_storage;
 
 void nvs_init() {
     esp_err_t ret;
@@ -17,6 +19,7 @@ void nvs_init() {
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
+    printf("open nvs\n");
     nvs_open("gamesaved", NVS_READWRITE, &nvs_handle_storage);
     nvs_queue = xQueueCreate(4, sizeof(nvs_data_t));
 }
@@ -65,7 +68,7 @@ void save_nvs_u16(const char* key, uint16_t value) {
 
 void save_nvs_u32(const char* key, uint32_t value) {
     nvs_data_t data = {
-        .type = 1,
+        .type = 2,
         .value.u32 = value
     };
     strncpy(data.key, key, sizeof(data.key) - 1);
