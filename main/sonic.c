@@ -192,7 +192,7 @@ void task_animation(void *pvParameters) {
     }
 }
 
-void sonic(spi_device_handle_t spi) {
+void game_sonic(spi_device_handle_t spi) {
     init_gpio_display();
     reset_display();
     spi_init(&spi);

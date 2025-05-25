@@ -26,7 +26,7 @@
 #define TRANSPARENT_COLOR 0xFFFF
 
 
-void sonic(spi_device_handle_t spi);
+void game_sonic(spi_device_handle_t spi);
 
 // Прототипы функций
 static void init_composite_buffer(uint16_t width, uint16_t height);

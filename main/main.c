@@ -27,6 +27,6 @@ void app_main(void)
     if (number_game == 0) game_pong(spi);
     else if (number_game == 1) game_doodle(spi);
     else if (number_game == 2) game_arkanoid(spi);
-    else if (number_game == 3) sonic(spi);
+    else if (number_game == 3) game_sonic(spi);
 }
 
