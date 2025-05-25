@@ -1,5 +1,5 @@
 #include "pong.h"
-#include "font.h"
+#include "core/font.h"
 
 bool game_paused = false;
 

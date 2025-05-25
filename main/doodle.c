@@ -1,5 +1,5 @@
 #include "doodle.h"
-#include "font.h"
+#include "core/font.h"
 
 
 void draw_platform(spi_device_handle_t spi, const Platform* p, 

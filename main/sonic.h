@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "font.h"
+#include "core/font.h"
 
 
 // Константы позиций спрайтов
