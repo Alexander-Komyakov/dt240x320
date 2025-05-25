@@ -1,6 +1,6 @@
 #pragma once
 #include "display.h"
-#include "button.h"
+#include "core/button.h"
 #include "saves.h"
 
 #define DEBOUNCE_TIME_MS 250

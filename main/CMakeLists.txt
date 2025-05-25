@@ -1,6 +1,6 @@
 idf_component_register(SRCS "main.c"
                        SRCS "menu.c"
-                       SRCS "button.c"
+                       SRCS "core/button.c"
                        SRCS "display.c"
                        SRCS "physics.c"
                        SRCS "font.c"
