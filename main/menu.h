@@ -1,7 +1,7 @@
 #pragma once
 #include "core/display.h"
 #include "core/button.h"
-#include "saves.h"
+#include "core/saves.h"
 
 #define DEBOUNCE_TIME_MS 250
 #define MENU_BACKGROUND_COLOR 0xAAAA

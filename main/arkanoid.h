@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <math.h>
 #include "core/font.h"
-//#include "saves.h" // сохранение
 
 // Константы игры
 #define BRICK_ROWS 8       // Увеличили для сложных фигур
