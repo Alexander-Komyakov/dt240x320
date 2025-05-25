@@ -2,7 +2,7 @@
 #include "core/button.h"
 #include "esp_log.h"
 #include "core/display.h"
-#include "image_structure.h"
+#include "core/image_structure.h"
 #include "pong.h"
 #include "doodle.h"
 #include "arkanoid.h"

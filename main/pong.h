@@ -6,7 +6,7 @@
 #include "freertos/stream_buffer.h"
 #include "core/button.h"
 #include "core/display.h"
-#include "image_structure.h"
+#include "core/image_structure.h"
 #include <stdlib.h>
 #include <stdio.h>
 

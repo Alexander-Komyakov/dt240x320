@@ -32,7 +32,7 @@
 #include "images/fighter_move4.h"
 #include "images/fighter_move5.h"
 #include "images/fighter_stay1.h"
-#include "arkanoid_preview.h"
+#include "images/arkanoid_preview.h"
 #include "spi.h"
 
 

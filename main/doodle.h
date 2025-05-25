@@ -8,7 +8,7 @@
 #include "core/display.h"
 #include "core/physics.h"
 #include "core/saves.h"
-#include "image_structure.h"
+#include "core/image_structure.h"
 #include <stdlib.h>
 #include <stdio.h>
 
