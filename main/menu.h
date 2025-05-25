@@ -1,5 +1,5 @@
 #pragma once
-#include "display.h"
+#include "core/display.h"
 #include "core/button.h"
 #include "saves.h"
 

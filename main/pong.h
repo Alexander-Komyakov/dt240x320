@@ -5,7 +5,7 @@
 #include "driver/spi_master.h"
 #include "freertos/stream_buffer.h"
 #include "core/button.h"
-#include "display.h"
+#include "core/display.h"
 #include "image_structure.h"
 #include <stdlib.h>
 #include <stdio.h>

@@ -1,7 +1,7 @@
 #include "main.h"
 #include "core/button.h"
 #include "esp_log.h"
-#include "display.h"
+#include "core/display.h"
 #include "image_structure.h"
 #include "pong.h"
 #include "doodle.h"
