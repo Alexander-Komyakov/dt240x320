@@ -2,6 +2,7 @@
 
 void game_flappy(spi_device_handle_t spi) {
     xStreamBuffer = xStreamBufferCreate(STREAM_BUF_SIZE, sizeof(int));
+    draw_image(spi, &image_flappy_ground);
 
     while (1) {
         // Обработка ввода игрока

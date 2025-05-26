@@ -34,6 +34,7 @@
 #include "images/fighter_stay1.h"
 #include "images/arkanoid_preview.h"
 #include "images/flappy_preview.h"
+#include "images/flappy_ground.h"
 #include "spi.h"
 
 
