@@ -35,6 +35,7 @@
 #include "images/arkanoid_preview.h"
 #include "images/flappy_preview.h"
 #include "images/flappy_ground.h"
+#include "images/flappy_background.h"
 #include "spi.h"
 
 
