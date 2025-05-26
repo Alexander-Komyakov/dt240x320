@@ -7,6 +7,7 @@
 #include "doodle.h"
 #include "arkanoid.h"
 #include "sonic.h"
+#include "flappy.h"
 #include "core/saves.h"
 #include "menu.h"
 
@@ -28,5 +29,6 @@ void app_main(void)
     else if (number_game == 1) game_doodle(spi);
     else if (number_game == 2) game_arkanoid(spi);
     else if (number_game == 3) game_sonic(spi);
+    else if (number_game == 4) game_flappy(spi);
 }
 
