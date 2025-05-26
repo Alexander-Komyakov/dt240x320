@@ -261,7 +261,7 @@ restart_game:
         if (overlap_count == 0) {
             draw_image(spi, &image_doodle_hero);
         } else {
-            draw_image_composite(spi, &image_doodle_hero, overlap_images, overlap_count);
+            draw_image_composite(spi, &image_doodle_hero, overlap_images, overlap_count, 0xFFFF);
         }
         for (i = 0; i < MAX_PLATFORM; i++) {
             platforms[i].prev_x = platforms[i].x;

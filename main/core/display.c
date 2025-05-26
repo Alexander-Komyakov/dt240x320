@@ -72,7 +72,7 @@ void draw_image_composite_slave(spi_device_handle_t spi, const Image *main_image
     free(dma_buffer);
 }
 
-void draw_image_composite(spi_device_handle_t spi, const Image *main_image, const Image *overlap_images, uint8_t overlap_count) {
+void draw_image_composite(spi_device_handle_t spi, const Image *main_image, const Image *overlap_images, uint8_t overlap_count, const uint16_t background_color) {
     send_command(spi, CMD_COLUMN);
     uint8_t col_data[4] = {
         main_image->x >> 8,
@@ -135,7 +135,7 @@ void draw_image_composite(spi_device_handle_t spi, const Image *main_image, cons
                     overlap_y < overlap->height &&
                     (overlap_y * overlap->width + overlap_x) < overlap->size_image) 
                 {
-                    if (dma_buffer[main_idx] == 0xFFFF) {
+                    if (dma_buffer[main_idx] == background_color) {
                         dma_buffer[main_idx] = overlap->pixels[overlap_y * overlap->width + overlap_x];
                     }
                 }
