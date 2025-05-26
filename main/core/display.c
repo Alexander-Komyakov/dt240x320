@@ -233,7 +233,7 @@ void draw_image(spi_device_handle_t spi, const Image *my_image) {
     free(dma_buffer);
 }
 
-void draw_image_background(spi_device_handle_t spi, const Image *my_image, const uint16_t *background) {
+void draw_image_background(spi_device_handle_t spi, const Image *my_image, const uint16_t *background, const uint16_t background_color) {
     send_command(spi, CMD_COLUMN);
     uint8_t col_data[4] = {my_image->x >> 8, my_image->x & 0xFF, (my_image->x - 1 + my_image->width) >> 8, (my_image->x - 1 + my_image->width) & 0xFF};
     send_data(spi, col_data, 4);
@@ -256,7 +256,7 @@ void draw_image_background(spi_device_handle_t spi, const Image *my_image, const
     }
 
     for (int i = 0; i < my_image->size_image; i++) {
-        if (my_image->pixels[i] == 0xFFFF) {
+        if (my_image->pixels[i] == background_color) {
             // Если пиксель прозрачный, берем фон
             int bg_x = my_image->x + (i % my_image->width);
             int bg_y = my_image->y + (i / my_image->width);

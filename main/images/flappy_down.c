@@ -85,8 +85,8 @@ const uint16_t image_flappy_down_pixels[816] = {
 0x195E, 0x195E, 0x195E, 0x195E, 0x195E, 0x195E, 
 };
 Image image_flappy_down = {
-    .x = 0,
-    .y = 0,
+    .x = 160,
+    .y = 140,
     .width = 24,
     .height = 34,
     .size_image = 816,
