@@ -35,7 +35,6 @@
 #include "images/arkanoid_preview.h"
 #include "images/flappy_preview.h"
 #include "images/flappy_ground.h"
-#include "images/flappy_background.h"
 #include "images/flappy_up.h"
 #include "images/flappy_mid.h"
 #include "images/flappy_down.h"
