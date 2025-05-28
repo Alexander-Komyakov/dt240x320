@@ -2,8 +2,8 @@
 
 void game_flappy(spi_device_handle_t spi) {
     xStreamBuffer = xStreamBufferCreate(STREAM_BUF_SIZE, sizeof(int));
-    fill_rect(spi, 60, 0, 260, 240, 0x4DF9);
 
+    fill_rect(spi, 60, 0, 260, 240, 0x4DF9);
     fill_rect(spi, 0, 0, 38, 240, 0xD6B1);
 
     uint8_t pipe_count = 2;
@@ -17,7 +17,7 @@ void game_flappy(spi_device_handle_t spi) {
         .pixels = image_flappy_pipe_pixels
     };
     images_flappy_pipe[0] = &(Image) {
-        .x = 260,
+        .x = 160,
         .y = 239,
         .width = 195,
         .height = 51,
@@ -29,11 +29,14 @@ void game_flappy(spi_device_handle_t spi) {
     uint16_t parity_counter = 50;
     uint16_t pipe_counter[pipe_count];
     uint16_t pipe_width[pipe_count];
-    pipe_width[0] = 60;
-    pipe_width[1] = 60;
+    //pipe_width[0] = 60; random 60->160 VIEW ME
+    uint16_t random_pipe_height = 60 + (esp_random() % 101);
+    pipe_width[0] = random_pipe_height;
+    images_flappy_pipe[0]->x = DISPLAY_WIDTH - pipe_width[0];
+    pipe_width[1] = DISPLAY_WIDTH - 140 - pipe_width[0];
+
     pipe_counter[0] = images_flappy_pipe[0]->height;
     pipe_counter[1] = images_flappy_pipe[1]->height;
-
 
     while (1) {
         if (parity_counter == 0) { parity_counter = 50; };
@@ -52,6 +55,10 @@ void game_flappy(spi_device_handle_t spi) {
                 if (images_flappy_pipe[i]->y == 0) {
                     draw_image_part(spi, images_flappy_pipe[i], (images_flappy_pipe[i]->width - pipe_width[i])*i, images_flappy_pipe[i]->height-pipe_counter[i], pipe_width[i], pipe_counter[i]);
                     if (pipe_counter[i] == 0) {
+                        random_pipe_height = 60 + (esp_random() % 101);
+                        pipe_width[0] = random_pipe_height;
+                        images_flappy_pipe[0]->x = DISPLAY_WIDTH - pipe_width[0];
+                        pipe_width[1] = DISPLAY_WIDTH - 140 - pipe_width[0];
                         images_flappy_pipe[i]->y = 239;
                         pipe_counter[i] = images_flappy_pipe[i]->height;
                     }
