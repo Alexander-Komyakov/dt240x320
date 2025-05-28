@@ -998,7 +998,7 @@ const uint16_t image_flappy_pipe_pixels[9945] = {
 0xC951, 0xC951, 0xC951, 0xC951, 0xC951, 
 };
 Image image_flappy_pipe = {
-    .x = 56,
+    .x = 60,
     .y = 0,
     .width = 195,
     .height = 51,

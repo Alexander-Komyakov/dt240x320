@@ -15,7 +15,6 @@ void nvs_init() {
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
-    printf("open nvs\n");
     nvs_open("gamesaved", NVS_READWRITE, &nvs_handle_storage);
     nvs_queue = xQueueCreate(4, sizeof(nvs_data_t));
 }

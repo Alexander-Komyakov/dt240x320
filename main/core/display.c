@@ -154,20 +154,20 @@ void draw_image_part(spi_device_handle_t spi, const Image *my_image,
     // Установка области вывода по X (столбцы)
     send_command(spi, CMD_COLUMN);
     uint8_t col_data[4] = {
-        (my_image->x + src_x) >> 8,
-        (my_image->x + src_x) & 0xFF,
-        (my_image->x + src_x + part_width - 1) >> 8,
-        (my_image->x + src_x + part_width - 1) & 0xFF
+        (my_image->x) >> 8,
+        (my_image->x) & 0xFF,
+        (my_image->x  + part_width - 1) >> 8,
+        (my_image->x  + part_width - 1) & 0xFF
     };
     send_data(spi, col_data, 4);
 
     // Установка области вывода по Y (строки)
     send_command(spi, CMD_ROW);
     uint8_t row_data[4] = {
-        (my_image->y + src_y) >> 8,           // Старший байт начального Y
-        (my_image->y + src_y) & 0xFF,         // Младший байт начального Y
-        (my_image->y + src_y + part_height - 1) >> 8,  // Старший байт конечного Y
-        (my_image->y + src_y + part_height - 1) & 0xFF // Младший байт конечного Y
+        (my_image->y) >> 8,           // Старший байт начального Y
+        (my_image->y) & 0xFF,         // Младший байт начального Y
+        (my_image->y  + part_height - 1) >> 8,  // Старший байт конечного Y
+        (my_image->y  + part_height - 1) & 0xFF // Младший байт конечного Y
     };
     send_data(spi, row_data, 4);
 
