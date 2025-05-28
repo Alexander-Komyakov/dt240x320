@@ -20,6 +20,7 @@ void game_flappy(spi_device_handle_t spi) {
     //image_flappy_pipe_up.y -= 25;
     //draw_image_part(spi, &image_flappy_pipe_up, 0, 25, 100, 26);
     uint16_t i = 50;
+    uint16_t pipe_counter = image_flappy_pipe.height;
 
     while (1) {
         if (i == 0) { i = 50; };
@@ -32,9 +33,20 @@ void game_flappy(spi_device_handle_t spi) {
             image_flappy_ground.y = 0;
             draw_image_part(spi, &image_flappy_ground, 0, 240-(i/2), 22, (i/2));
         } else {
-            if (image_flappy_pipe.y == 0) image_flappy_pipe.y = 189;
-            image_flappy_pipe.y--;
-            draw_image_part(spi, &image_flappy_pipe, 0, 0, 195, 51);
+            if (image_flappy_pipe.y == 0) {
+                draw_image_part(spi, &image_flappy_pipe, 0, image_flappy_pipe.height-pipe_counter, 195, pipe_counter);
+                if (pipe_counter == 0) {
+                    image_flappy_pipe.y = 239;
+                    pipe_counter = image_flappy_pipe.height;
+                }
+                pipe_counter--;
+            } else if (image_flappy_pipe.y > 189) {
+                draw_image_part(spi, &image_flappy_pipe, 0, 0, 195, DISPLAY_HEIGHT-image_flappy_pipe.y);
+                image_flappy_pipe.y--;
+            } else  {
+                draw_image_part(spi, &image_flappy_pipe, 0, 0, 195, 51);
+                image_flappy_pipe.y--;
+            }
         }
         i--;
         //if (xStreamBufferReceive(xStreamBuffer, &received_button, sizeof(received_button), 0) > 0) {
