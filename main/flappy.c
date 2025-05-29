@@ -9,6 +9,8 @@ restart_game:
     uint16_t player_record = load_nvs_u16("flappy");
     uint16_t player_score = 0;
 
+    int received_button;
+    image_flappy_up.x = 150;
     uint8_t pipe_count = 2;
     Image* images_flappy_pipe[pipe_count];
     images_flappy_pipe[1] = &(Image) {
@@ -37,6 +39,8 @@ restart_game:
     uint16_t p_text[3];
     uint16_t p_pos = 0;
 
+    uint8_t limit_jump = 0;
+
     uint16_t random_pipe_height = 30 + (esp_random() % 131);
     pipe_width[0] = random_pipe_height;
     images_flappy_pipe[0]->x = DISPLAY_WIDTH - pipe_width[0];
@@ -46,6 +50,15 @@ restart_game:
     pipe_counter[1] = images_flappy_pipe[1]->height;
 
     while (1) {
+        image_flappy_up.x--;
+        if (limit_jump != 0) {
+            if (image_flappy_up.x < DISPLAY_WIDTH-4-image_flappy_up.width) {
+                image_flappy_up.x += 2;
+            }
+            limit_jump -= 2;
+        }
+        fill_rect(spi, image_flappy_up.x+image_flappy_up.width, image_flappy_up.y, 1, image_flappy_up.height, 0x4DF9);
+        fill_rect(spi, image_flappy_up.x-1, image_flappy_up.y, 1, image_flappy_up.height, 0x4DF9);
         if (parity_counter == 0) { parity_counter = 50; };
         if (flappy_counter == 18) { flappy_counter = 0; };
         if (check_collision_rect(image_flappy_up.x, image_flappy_up.y, image_flappy_up.width, image_flappy_up.height,
@@ -113,13 +126,11 @@ restart_game:
         }
         parity_counter--;
         // Обработка ввода игрока
-        //if (xStreamBufferReceive(xStreamBuffer, &received_button, sizeof(received_button), 0) > 0) {
-        //    if (received_button == BUTTON_UP) {
-        //    }
-        //    else if (received_button == BUTTON_DOWN) {
-        //    }
-
-        //}
+        if (xStreamBufferReceive(xStreamBuffer, &received_button, sizeof(received_button), 0) > 0) {
+            if (limit_jump == 0) {
+                limit_jump = 50;
+            }
+        }
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
