@@ -9,7 +9,11 @@
 #include "core/image_structure.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include "esp_system.h"
 #include "esp_random.h"
+#include "core/saves.h"
+#include "core/physics.h"
+#include "core/font.h"
 
 
 void game_flappy(spi_device_handle_t spi);
