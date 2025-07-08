@@ -37,7 +37,7 @@ void spi_init(spi_device_handle_t *spi) {
     }
 
     spi_device_interface_config_t spicfg = {
-        .clock_speed_hz = SPI_MASTER_FREQ_20M,
+        .clock_speed_hz = 40000000,
         .spics_io_num = PIN_NUM_CS,
         .queue_size = 7,
         .flags = SPI_DEVICE_NO_DUMMY,
