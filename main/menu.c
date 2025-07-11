@@ -18,7 +18,7 @@ uint8_t menu(spi_device_handle_t spi) {
     draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
 
     image_pong_preview.y = 140;
-    draw_image(spi, &image_pong_preview);
+    draw_image(spi, &image_dacha_preview);
     draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
 
     image_pong_preview.x = 127;

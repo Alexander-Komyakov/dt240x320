@@ -40,6 +40,7 @@
 #include "images/flappy_down.h"
 #include "images/flappy_pipe.h"
 #include "images/flappy_pipe_up.h"
+#include "images/dacha_preview.h"
 #include "spi.h"
 
 
