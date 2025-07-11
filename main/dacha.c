@@ -3,8 +3,8 @@
 void game_dacha(spi_device_handle_t spi) {
     xStreamBuffer = xStreamBufferCreate(STREAM_BUF_SIZE, sizeof(int));
 
-    fill_rect(spi, 60, 0, 260, 240, 0x4DF9);
-    fill_rect(spi, 0, 0, 38, 240, 0xD6B1);
+	draw_image(spi, &image_dacha);
+
 	int received_button;
 
     while (1) {
