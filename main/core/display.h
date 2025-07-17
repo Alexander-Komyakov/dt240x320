@@ -42,6 +42,7 @@
 #include "images/flappy_pipe_up.h"
 #include "images/dacha_preview.h"
 #include "images/dacha_evening.h"
+#include "images/dacha_car.h"
 #include "images/dacha.h"
 #include "spi.h"
 

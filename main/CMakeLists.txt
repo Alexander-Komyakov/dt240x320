@@ -45,5 +45,6 @@ idf_component_register(SRCS "main.c"
 					   SRCS "images/fighter_stay1.c"
 					   SRCS "images/dacha_preview.c"
 					   SRCS "images/dacha_evening.c"
+					   SRCS "images/dacha_car.c"
 					   SRCS "images/dacha.c"
                     INCLUDE_DIRS ".")
