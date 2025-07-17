@@ -388,19 +388,19 @@ void draw_pixel(spi_device_handle_t spi, uint16_t x, uint16_t y, uint16_t color)
 }
 
 
-void vertical_scroll(spi_device_handle_t spi, uint16_t* tfa, uint16_t* vsa, uint16_t* bfa, uint16_t* ssa) {
+void vertical_scroll(spi_device_handle_t spi, uint16_t tfa, uint16_t vsa, uint16_t bfa, uint16_t ssa) {
   send_command(spi, CMD_SCRLAR);
 
-  send_command_no_dc(spi, ((*tfa >> 8) & 0xFF));
-  send_command_no_dc(spi, (*tfa & 0xFF));
-  send_command_no_dc(spi, ((*vsa >> 8) & 0xFF));
-  send_command_no_dc(spi, (*vsa & 0xFF));
-  send_command_no_dc(spi, ((*bfa >> 8) & 0xFF));
-  send_command_no_dc(spi, (*bfa & 0xFF));
+  send_command_no_dc(spi, ((tfa >> 8) & 0xFF));
+  send_command_no_dc(spi, (tfa & 0xFF));
+  send_command_no_dc(spi, ((vsa >> 8) & 0xFF));
+  send_command_no_dc(spi, (vsa & 0xFF));
+  send_command_no_dc(spi, ((bfa >> 8) & 0xFF));
+  send_command_no_dc(spi, (bfa & 0xFF));
 
   send_command(spi, CMD_VSCSAD);
-  send_command_no_dc(spi, ((*ssa >> 8) & 0xFF));
-  send_command_no_dc(spi, (*ssa & 0xFF));
+  send_command_no_dc(spi, ((ssa >> 8) & 0xFF));
+  send_command_no_dc(spi, (ssa & 0xFF));
 }
 
 void init_display(spi_device_handle_t spi) {

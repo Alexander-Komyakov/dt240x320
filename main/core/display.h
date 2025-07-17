@@ -41,6 +41,7 @@
 #include "images/flappy_pipe.h"
 #include "images/flappy_pipe_up.h"
 #include "images/dacha_preview.h"
+#include "images/dacha_evening.h"
 #include "images/dacha.h"
 #include "spi.h"
 
@@ -72,7 +73,7 @@ void fill_rect(spi_device_handle_t spi, uint16_t x, uint16_t y, uint16_t width, 
 void fill_screen(spi_device_handle_t spi, uint16_t color);
 void fill_screen_gradient(spi_device_handle_t spi, uint16_t color_start, uint16_t color_end);
 void draw_pixel(spi_device_handle_t spi, uint16_t x, uint16_t y, uint16_t color);
-void vertical_scroll(spi_device_handle_t spi, uint16_t* tfa, uint16_t* vsa, uint16_t* bfa, uint16_t* ssa);
+void vertical_scroll(spi_device_handle_t spi, uint16_t tfa, uint16_t vsa, uint16_t bfa, uint16_t ssa);
 void draw_image(spi_device_handle_t spi, const Image *my_image);
 void draw_image_background(spi_device_handle_t spi, const Image *my_image, const uint16_t *background, const uint16_t background_color);
 void draw_image_part(spi_device_handle_t spi, const Image *my_image,
