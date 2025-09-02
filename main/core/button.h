@@ -1,12 +1,18 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/stream_buffer.h"
 #include "driver/gpio.h"
+#include "driver/adc.h"
 
 // Определяем пины для клавиш
 #define BUTTON_PINS {GPIO_NUM_13, GPIO_NUM_14, GPIO_NUM_16, GPIO_NUM_17, GPIO_NUM_19, GPIO_NUM_21, GPIO_NUM_22, GPIO_NUM_25, GPIO_NUM_32}
 
 // Задержка для устранения дребезга клавишь (в миллисекундах)
-#define DEBOUNCE_DELAY_MS 5
+
+#ifdef ENABLE_ANALOG_CONTROL
+    #define DEBOUNCE_DELAY_MS 20
+#else
+    #define DEBOUNCE_DELAY_MS 5
+#endif
 
 // Назначение клавиш
 #define BUTTON_LEFT    GPIO_NUM_19
