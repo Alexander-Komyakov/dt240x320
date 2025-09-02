@@ -13,7 +13,6 @@ void game_dacha(spi_device_handle_t spi) {
     uint16_t ssa = 0;
     float speed = 0;
     uint16_t iter_scroll = 1;
-    draw_image_background(spi, &image_dacha_car, image_dacha_evening_pixels, 0xFFFF);
     while (1) {
         // Обработка ввода игрока
         if (xStreamBufferReceive(xStreamBuffer, &received_button, sizeof(received_button), 0) > 0) {
@@ -26,7 +25,9 @@ void game_dacha(spi_device_handle_t spi) {
         } else {
             speed = 0;
         }
+        if (ssa > 80) { image_dacha_car.x = 380 - ssa; }
         image_dacha_car.x = ssa;
+        printf("x: %d ssa: %d iter: %d\n", image_dacha_car.x, ssa, iter_scroll);
         draw_image_background(spi, &image_dacha_car, image_dacha_evening_pixels, 0xFFFF);
 
 

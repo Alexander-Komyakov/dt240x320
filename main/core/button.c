@@ -2,6 +2,8 @@
 
 #define BUTTON_PIN ADC1_CHANNEL_0
 
+#define ENABLE_ANALOG_CONTROL 1
+
 // Стрим для передачи нажатых клавишь
 StreamBufferHandle_t xStreamBuffer;
 
@@ -60,8 +62,7 @@ void button_task(void *pvParameter) {
             xStreamBufferSend(xStreamBuffer, &pins[0], sizeof(pins[0]), 0);
             vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_DELAY_MS));
         }
-#endif
-
+#else
         for (int i = 0; i < num_pins; i++) {
             if (gpio_get_level(pins[i]) == 0) { // Если кнопка нажата (LOW, так как подтяжка к VCC)
                 printf("pins: %d\n", i);
@@ -69,6 +70,7 @@ void button_task(void *pvParameter) {
                 vTaskDelay(pdMS_TO_TICKS(DEBOUNCE_DELAY_MS)); // Задержка для устранения дребезга
             }
         }
+#endif
         vTaskDelay(pdMS_TO_TICKS(10)); // Небольшая задержка для снижения нагрузки на CPU
     }
 }

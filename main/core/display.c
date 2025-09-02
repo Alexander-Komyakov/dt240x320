@@ -176,12 +176,21 @@ void draw_image_part(spi_device_handle_t spi, const Image *my_image,
     uint16_t *dma_buffer = heap_caps_malloc(part_width * part_height * sizeof(uint16_t), MALLOC_CAP_DMA);
 
     // Построчное копирование с правильными смещениями
+    //for (uint16_t y = 0; y < part_height; y++) {
+    //    uint32_t src_offset = (src_y + y) * my_image->width + src_x;
+    //    uint32_t dst_offset = y * part_width;
+    //    memcpy(dma_buffer + dst_offset,
+    //           my_image->pixels + src_offset,
+    //           part_width * sizeof(uint16_t));
+    //}
+
+    // Правильно - копирует только нужную область
     for (uint16_t y = 0; y < part_height; y++) {
-        uint32_t src_offset = (src_y + y) * my_image->width + src_x;
-        uint32_t dst_offset = y * part_width;
-        memcpy(dma_buffer + dst_offset,
-               my_image->pixels + src_offset,
-               part_width * sizeof(uint16_t));
+        for (uint16_t x = 0; x < part_width; x++) {
+            uint32_t src_idx = (src_y + y) * my_image->width + (src_x + x);
+            uint32_t dst_idx = y * part_width + x;
+            dma_buffer[dst_idx] = my_image->pixels[src_idx];
+        }
     }
 
     send_data16b(spi, dma_buffer, part_width * part_height);
@@ -233,42 +242,153 @@ void draw_image(spi_device_handle_t spi, const Image *my_image) {
     free(dma_buffer);
 }
 
-void draw_image_background(spi_device_handle_t spi, const Image *my_image, const uint16_t *background, const uint16_t background_color) {
+
+// Вспомогательная функция для рисования части изображения с фоном
+void draw_image_part_with_background(spi_device_handle_t spi, const Image *my_image, const uint16_t *background, 
+                                   const uint16_t background_color, uint16_t src_x, uint16_t src_y,
+                                   uint16_t part_width, uint16_t part_height) {
+    
+    // Установка области вывода
     send_command(spi, CMD_COLUMN);
-    uint8_t col_data[4] = {my_image->x >> 8, my_image->x & 0xFF, (my_image->x - 1 + my_image->width) >> 8, (my_image->x - 1 + my_image->width) & 0xFF};
+    uint8_t col_data[4] = {
+        (my_image->x + src_x) >> 8, (my_image->x + src_x) & 0xFF,
+        (my_image->x + src_x + part_width - 1) >> 8, (my_image->x + src_x + part_width - 1) & 0xFF
+    };
     send_data(spi, col_data, 4);
 
     send_command(spi, CMD_ROW);
-    uint8_t row_data[4] = {0, my_image->y & 0xFF, 0, (my_image->y - 1 + my_image->height) & 0xFF};
+    uint8_t row_data[4] = {
+        (my_image->y + src_y) >> 8, (my_image->y + src_y) & 0xFF,
+        (my_image->y + src_y + part_height - 1) >> 8, (my_image->y + src_y + part_height - 1) & 0xFF
+    };
     send_data(spi, row_data, 4);
 
     send_command(spi, CMD_SET_PIXEL);
 
     // Создаем DMA буфер
-    uint16_t *dma_buffer = heap_caps_malloc(
-        my_image->size_image * sizeof(uint16_t),
-        MALLOC_CAP_DMA
-    );
-    // Проверяем доступность памяти
+    uint16_t *dma_buffer = heap_caps_malloc(part_width * part_height * sizeof(uint16_t), MALLOC_CAP_DMA);
     if (!dma_buffer) {
         ESP_LOGE("DMA", "Не хватило памяти!");
         return;
     }
 
-    for (int i = 0; i < my_image->size_image; i++) {
-        if (my_image->pixels[i] == background_color) {
-            // Если пиксель прозрачный, берем фон
-            int bg_x = my_image->x + (i % my_image->width);
-            int bg_y = my_image->y + (i / my_image->width);
-            dma_buffer[i] = background[bg_y * DISPLAY_WIDTH + bg_x];
-        } else {
-            // Иначе берем пиксель из спрайта
-            dma_buffer[i] = my_image->pixels[i];
+    // Заполняем буфер с учетом фона
+    for (int y = 0; y < part_height; y++) {
+        for (int x = 0; x < part_width; x++) {
+            uint32_t src_idx = (src_y + y) * my_image->width + (src_x + x);
+            uint32_t dst_idx = y * part_width + x;
+            
+            if (my_image->pixels[src_idx] == background_color) {
+                // Если пиксель прозрачный, берем фон
+                int bg_x = my_image->x + src_x + x;
+                int bg_y = my_image->y + src_y + y;
+                
+                if (bg_x >= 0 && bg_x < DISPLAY_WIDTH && bg_y >= 0 && bg_y < DISPLAY_HEIGHT) {
+                    dma_buffer[dst_idx] = background[bg_y * DISPLAY_WIDTH + bg_x];
+                } else {
+                    dma_buffer[dst_idx] = background_color; // Белый фон за границами
+                }
+            } else {
+                // Иначе берем пиксель из спрайта
+                dma_buffer[dst_idx] = my_image->pixels[src_idx];
+            }
         }
     }
 
-    send_data16b(spi, dma_buffer, my_image->size_image);
+    send_data16b(spi, dma_buffer, part_width * part_height);
     free(dma_buffer);
+}
+void draw_image_background(spi_device_handle_t spi, const Image *my_image, const uint16_t *background, const uint16_t background_color) {
+    // Если изображение полностью в пределах экрана
+    if (my_image->x >= 0 && my_image->x + my_image->width <= DISPLAY_WIDTH) {
+        send_command(spi, CMD_COLUMN);
+        uint8_t col_data[4] = {my_image->x >> 8, my_image->x & 0xFF, (my_image->x - 1 + my_image->width) >> 8, (my_image->x - 1 + my_image->width) & 0xFF};
+        send_data(spi, col_data, 4);
+
+        send_command(spi, CMD_ROW);
+        uint8_t row_data[4] = {0, my_image->y & 0xFF, 0, (my_image->y - 1 + my_image->height) & 0xFF};
+        send_data(spi, row_data, 4);
+
+        send_command(spi, CMD_SET_PIXEL);
+        
+        // Создаем DMA буфер
+        uint16_t *dma_buffer = heap_caps_malloc(
+            my_image->size_image * sizeof(uint16_t),
+            MALLOC_CAP_DMA
+        );
+        // Проверяем доступность памяти
+        if (!dma_buffer) {
+            ESP_LOGE("DMA", "Не хватило памяти!");
+            return;
+        }
+        
+        for (int i = 0; i < my_image->size_image; i++) {
+            if (my_image->pixels[i] == background_color) {
+                // Если пиксель прозрачный, берем фон
+                int bg_x = my_image->x + (i % my_image->width);
+                int bg_y = my_image->y + (i / my_image->width);
+                dma_buffer[i] = background[bg_y * DISPLAY_WIDTH + bg_x];
+            } else {
+                // Иначе берем пиксель из спрайта
+                dma_buffer[i] = my_image->pixels[i];
+            }
+        }
+        
+        send_data16b(spi, dma_buffer, my_image->size_image);
+        free(dma_buffer);
+    }
+    // Если выходит за правый край
+    else {
+        int visible_width = DISPLAY_WIDTH - my_image->x; // Видимая часть слева
+        int wrap_width = my_image->width - visible_width; // Часть, которая переносится налево
+
+        // Рисуем видимую левую часть с фоном
+        if (visible_width > 0) {
+            draw_image_part_with_background(spi, my_image, background, background_color, 0, 0, visible_width, my_image->height);
+        }
+
+        // Рисуем перенесенную правую часть слева с фоном
+        if (wrap_width > 0) {
+            Image wrap_image = *my_image;
+            wrap_image.x = 0;
+            wrap_image.width = wrap_width;
+            wrap_image.size_image = wrap_width * my_image->height;
+
+            // Временный буфер для переносимой части с фоном
+            uint16_t *wrap_pixels = heap_caps_malloc(wrap_image.size_image * sizeof(uint16_t), MALLOC_CAP_DMA);
+            if (!wrap_pixels) {
+                ESP_LOGE("DMA", "Не хватило памяти для wrap buffer!");
+                return;
+            }
+
+            // Заполняем буфер с учетом фона
+            for (int y = 0; y < my_image->height; y++) {
+                for (int x = 0; x < wrap_width; x++) {
+                    uint32_t src_idx = y * my_image->width + (visible_width + x);
+                    uint32_t dst_idx = y * wrap_width + x;
+                    
+                    if (my_image->pixels[src_idx] == background_color) {
+                        // Если пиксель прозрачный, берем фон
+                        int bg_x = 0 + x; // X на экране для wrap-части
+                        int bg_y = my_image->y + y;
+                        
+                        if (bg_x >= 0 && bg_x < DISPLAY_WIDTH && bg_y >= 0 && bg_y < DISPLAY_HEIGHT) {
+                            wrap_pixels[dst_idx] = background[bg_y * DISPLAY_WIDTH + bg_x];
+                        } else {
+                            wrap_pixels[dst_idx] = background_color; // Белый фон за границами
+                        }
+                    } else {
+                        // Иначе берем пиксель из спрайта
+                        wrap_pixels[dst_idx] = my_image->pixels[src_idx];
+                    }
+                }
+            }
+
+            wrap_image.pixels = wrap_pixels;
+            draw_image_part(spi, &wrap_image, 0, 0, wrap_width, my_image->height);
+            free(wrap_pixels);
+        }
+    }
 }
 
 void fill_rect(spi_device_handle_t spi, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint16_t color) {
