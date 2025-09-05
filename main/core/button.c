@@ -1,9 +1,5 @@
 #include "button.h"
 
-#define BUTTON_PIN ADC1_CHANNEL_0
-
-#define ENABLE_ANALOG_CONTROL 1
-
 // Стрим для передачи нажатых клавишь
 StreamBufferHandle_t xStreamBuffer;
 
