@@ -122,16 +122,15 @@ void task_animation(void *pvParameters) {
     const uint8_t move_frame_delay = 1;
     const uint8_t shot_frame_delay = 1;
 
-    // Позиция и движение
-    uint16_t fighter_x = FIGHTER_X;
-    uint16_t fighter_y = FIGHTER_Y;
-    const uint8_t move_speed = 6; // было 8
-    const int base_scroll_speed = 6; // было 8
+    // Позиция и движение - исправляем тип на int16_t
+    int16_t fighter_x = FIGHTER_X;
+    int16_t fighter_y = FIGHTER_Y;
+    const uint8_t move_speed = 6;
     
-    // Границы для скроллинга (1/5 слева и 4/5 справа)
-    const int left_scroll_boundary = DISPLAY_WIDTH * 1 / 5;       // 1/5 экрана
-    const int right_scroll_boundary = DISPLAY_WIDTH * 4 / 5;  // 4/5 экрана
-    const int target_margin = DISPLAY_WIDTH / 20;              // 1/20 от края как целевой отступ
+    // Зоны для смещения камеры к центру
+    const int left_camera_zone = DISPLAY_WIDTH / 4;      // 1/4 экрана слева
+    const int right_camera_zone = DISPLAY_WIDTH * 3 / 4; // 3/4 экрана справа
+    const int camera_speed = 4;                          // Скорость смещения к центру
 
     // Инициализация буфера
     init_composite_buffer(DISPLAY_WIDTH, DISPLAY_HEIGHT);
@@ -167,51 +166,29 @@ void task_animation(void *pvParameters) {
             int character_width = fighter_move_frames[0]->width;
             int max_x = DISPLAY_WIDTH - character_width;
             
+            // Движение персонажа
             if (left_pressed) {
-                // Движение влево
-                if (fighter_x > move_speed) {
-                    fighter_x -= move_speed;
-                } else if (fighter_x > 0) {
-                    fighter_x = 0;
-                }
-                
-                // Скроллим экран влево, если персонаж в левой зоне скроллинга
-                if (fighter_x <= left_scroll_boundary) {
-                    // Рассчитываем скорость скроллинга пропорционально отклонению от целевой позиции
-                    int target_x = target_margin;
-                    if (fighter_x < target_x) {
-                        float scroll_ratio = (float)(target_x - fighter_x) / target_x;
-                        int scroll_speed_calculated = (int)(base_scroll_speed * (1.0f + scroll_ratio));
-                        global_scroll_offset -= scroll_speed_calculated;
-                    }
-                }
+                fighter_x -= move_speed;
             }
             else if (right_pressed) {
-                // Движение вправо
-                if (fighter_x < max_x - move_speed) {
-                    fighter_x += move_speed;
-                } else if (fighter_x < max_x) {
-                    fighter_x = max_x;
-                }
-                
-                // Скроллим экран вправо, если персонаж в правой зоне скроллинга
-                if (fighter_x >= right_scroll_boundary - character_width) {
-                    // Рассчитываем скорость скроллинга пропорционально отклонению от целевой позиции
-                    int target_x = max_x - target_margin;
-                    if (fighter_x > target_x) {
-                        float scroll_ratio = (float)(fighter_x - target_x) / (max_x - target_x);
-                        int scroll_speed_calculated = (int)(base_scroll_speed * (1.0f + scroll_ratio));
-                        global_scroll_offset += scroll_speed_calculated;
-                    }
-                }
+                fighter_x += move_speed;
             }
             
-            // Корректируем позицию персонажа, чтобы он не выходил за целевые границы
-            if (fighter_x < target_margin) {
-                fighter_x = target_margin;
-            } else if (fighter_x > max_x - target_margin) {
-                fighter_x = max_x - target_margin;
+            // Автоматическое смещение камеры к центру при приближении к краям
+            if (fighter_x < left_camera_zone) {
+                // Персонаж в левой зоне - смещаем камеру влево, а персонажа к центру
+                global_scroll_offset -= camera_speed;
+                fighter_x += camera_speed; // Смещаем персонажа обратно к центру
             }
+            else if (fighter_x > right_camera_zone - character_width) {
+                // Персонаж в правой зоне - смещаем камеру вправо, а персонажа к центру
+                global_scroll_offset += camera_speed;
+                fighter_x -= camera_speed; // Смещаем персонажа обратно к центру
+            }
+            
+            // Ограничиваем позицию персонажа в пределах экрана
+            if (fighter_x < 0) fighter_x = 0;
+            if (fighter_x > max_x) fighter_x = max_x;
             
             // Циклический скролл фона
             int total_width = image_background.width + image_background2.width + image_background3.width;
