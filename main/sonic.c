@@ -9,6 +9,9 @@ Image current_pikachu = {0};
 static uint16_t *composite_buffer = NULL;
 static size_t composite_buffer_size = 0;
 
+// Глобальное смещение для скроллинга
+static int global_scroll_offset = 0;
+
 // Инициализация буфера
 void init_composite_buffer(uint16_t width, uint16_t height) {
     size_t needed_size = width * height * sizeof(uint16_t);
@@ -36,13 +39,31 @@ void draw_character(const Image *character) {
     }
 }
 
+// Получение пикселя из объединенной сцены (оба фона как один уровень)
+static uint16_t get_scene_pixel(int x, int y) {
+    int total_width = image_background.width + image_background2.width;
+    
+    // Обеспечиваем циклический скролл
+    x = x % total_width;
+    if (x < 0) x += total_width;
+    
+    if (x < image_background.width) {
+        // Первый фон
+        return image_background.pixels[y * image_background.width + x];
+    } else {
+        // Второй фон
+        int bg2_x = x - image_background.width;
+        return image_background2.pixels[y * image_background2.width + bg2_x];
+    }
+}
+
 // Создание композитного кадра (фон + персонажи)
-void prepare_composite_frame(uint16_t scroll_offset) {
-    // Копируем фон со смещением
+void prepare_composite_frame(int scroll_offset) {
+    // Копируем фон со смещением из объединенной сцены
     for (int y = 0; y < DISPLAY_HEIGHT; y++) {
         for (int x = 0; x < DISPLAY_WIDTH; x++) {
-            int src_x = (x + scroll_offset) % DISPLAY_WIDTH;
-            composite_buffer[y * DISPLAY_WIDTH + x] = image_background.pixels[y * DISPLAY_WIDTH + src_x];
+            int scene_x = x + scroll_offset;
+            composite_buffer[y * DISPLAY_WIDTH + x] = get_scene_pixel(scene_x, y);
         }
     }
 
@@ -50,13 +71,10 @@ void prepare_composite_frame(uint16_t scroll_offset) {
     draw_character(&current_fighter);
 }
 
-// Функция вращения экрана
-void rotate_display(spi_device_handle_t spi, uint16_t speed) {
-    static uint16_t scroll_offset = 0;
-    scroll_offset = (scroll_offset + speed) % DISPLAY_WIDTH;
-
+// Функция отрисовки экрана
+void render_display(spi_device_handle_t spi) {
     // Подготавливаем кадр со смещением
-    prepare_composite_frame(scroll_offset);
+    prepare_composite_frame(global_scroll_offset);
 
     // Отправляем на дисплей
     send_command(spi, CMD_COLUMN);
@@ -81,7 +99,6 @@ void task_animation(void *pvParameters) {
                                         &image_fighter_move3, &image_fighter_move4,
                                         &image_fighter_move5};
     const Image *fighter_shot_frames[] = {&image_fighter_shot1};
-//, &image_fighter_shot2};
 
     // Состояние персонажа
     typedef enum {
@@ -104,9 +121,9 @@ void task_animation(void *pvParameters) {
     // Позиция и движение
     uint16_t fighter_x = FIGHTER_X;
     uint16_t fighter_y = FIGHTER_Y;
-    const uint8_t move_speed = 5;
-    uint16_t scroll_speed = 0;
-    const uint16_t moving_scroll_speed = 6;
+    const uint8_t move_speed = 8;
+    const int scroll_speed = 8;
+    const int scroll_threshold = 50; // Расстояние от края экрана для начала скроллинга
 
     // Инициализация буфера
     init_composite_buffer(DISPLAY_WIDTH, DISPLAY_HEIGHT);
@@ -119,20 +136,17 @@ void task_animation(void *pvParameters) {
 
         // 2. Обработка состояний
         if (red_button_pressed && current_state != STATE_SHOOTING) {
-            // Начало анимации удара
             current_state = STATE_SHOOTING;
             current_frame = 0;
             frame_counter = 0;
             red_button_enabled = false;
         }
         else if (current_state == STATE_SHOOTING) {
-            // Продолжаем анимацию удара
             if (frame_counter++ >= shot_frame_delay) {
                 frame_counter = 0;
                 current_frame++;
                 
                 if (current_frame >= sizeof(fighter_shot_frames)/sizeof(fighter_shot_frames[0])) {
-                    // Завершение анимации удара
                     current_state = STATE_IDLE;
                     current_frame = 0;
                     red_button_enabled = true;
@@ -140,18 +154,42 @@ void task_animation(void *pvParameters) {
             }
         } 
         else if (left_pressed || right_pressed) {
-            // Движение
             current_state = STATE_MOVING;
             
             if (left_pressed) {
-                fighter_x = (fighter_x > move_speed) ? fighter_x - move_speed : 0;
-                scroll_speed = moving_scroll_speed;
+                // Движение влево
+                if (fighter_x > move_speed) {
+                    fighter_x -= move_speed;
+                } else if (fighter_x > 0) {
+                    fighter_x = 0;
+                }
+                
+                // Скроллим фон влево, если персонаж у левого края
+                if (fighter_x <= scroll_threshold) {
+                    global_scroll_offset -= scroll_speed; // МИНУС - фон движется влево
+                }
             }
             else if (right_pressed) {
-                fighter_x = (fighter_x < DISPLAY_WIDTH - fighter_move_frames[0]->width - move_speed) 
-                          ? fighter_x + move_speed 
-                          : DISPLAY_WIDTH - fighter_move_frames[0]->width;
-                scroll_speed = moving_scroll_speed;
+                // Движение вправо
+                int max_x = DISPLAY_WIDTH - fighter_move_frames[0]->width;
+                if (fighter_x < max_x - move_speed) {
+                    fighter_x += move_speed;
+                } else if (fighter_x < max_x) {
+                    fighter_x = max_x;
+                }
+                
+                // Скроллим фон вправо, если персонаж у правого края
+                if (fighter_x >= max_x - scroll_threshold) {
+                    global_scroll_offset += scroll_speed; // ПЛЮС - фон движется вправо
+                }
+            }
+            
+            // Циклический скролл фона
+            int total_width = image_background.width + image_background2.width;
+            if (global_scroll_offset >= total_width) {
+                global_scroll_offset -= total_width;
+            } else if (global_scroll_offset < 0) {
+                global_scroll_offset += total_width;
             }
             
             if (frame_counter++ >= move_frame_delay) {
@@ -160,9 +198,7 @@ void task_animation(void *pvParameters) {
             }
         }
         else {
-            // Стояние
             current_state = STATE_IDLE;
-            scroll_speed = 0;
             current_frame = 0;
             frame_counter = 0;
         }
@@ -185,29 +221,23 @@ void task_animation(void *pvParameters) {
         current_fighter.x = fighter_x;
         current_fighter.y = fighter_y;
 
-        // 5. Вращение экрана (если есть движение)
-        rotate_display(spi, (current_state == STATE_MOVING) ? scroll_speed : 0);
+        // 5. Отрисовка экрана
+        render_display(spi);
 
         vTaskDelay(10 / portTICK_PERIOD_MS);
     }
 }
 
 void game_sonic(spi_device_handle_t spi) {
-    init_gpio_display();
-    reset_display();
-    spi_init(&spi);
-
-    // Инициализация дисплея
-    send_command(spi, CMD_SOFTWARE_RESET);
-    send_command(spi, CMD_SLEEP_OUT);
-    send_command(spi, CMD_SET_RGB);
-    send_data(spi, (uint8_t[]){0x05}, 1);
-    send_command(spi, CMD_DISPLAY_ON);
-    send_command(spi, CMD_NORMAL_MODE);
-
-    uint8_t madctl_value = 0x60;
-    send_command(spi, CMD_MADCTL);
-    send_data(spi, &madctl_value, 1);
+    // Инициализация GPIO для кнопок
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << BUTTON_LEFT) | (1ULL << BUTTON_RIGHT) | (1ULL << BUTTON_RED),
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE
+    };
+    gpio_config(&io_conf);
 
     xTaskCreate(task_animation, "animation_task", 4096, spi, 1, NULL);
 }

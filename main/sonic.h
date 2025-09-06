@@ -8,11 +8,10 @@
 #include "core/display.h"
 #include "core/physics.h"
 #include "core/image_structure.h"
+#include "core/font.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include "core/font.h"
-
 
 // Константы позиций спрайтов
 #define FIGHTER_X 10
@@ -25,12 +24,11 @@
 // Белый цвет
 #define TRANSPARENT_COLOR 0xFFFF
 
-
+// Change this line:
 void game_sonic(spi_device_handle_t spi);
 
 // Прототипы функций
-static void init_composite_buffer(uint16_t width, uint16_t height);
-static void draw_character(const Image *character);
-static void prepare_composite_frame(uint16_t scroll_offset);
-static void rotate_display(spi_device_handle_t spi, uint16_t speed);
-
+void init_composite_buffer(uint16_t width, uint16_t height);
+void draw_character(const Image *character);
+void prepare_composite_frame(int scroll_offset);
+void render_display(spi_device_handle_t spi);

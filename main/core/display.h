@@ -26,6 +26,7 @@
 #include "images/pikachu1.h"
 #include "images/pikachu2.h"
 #include "images/background.h"
+#include "images/background2.h"
 #include "images/fighter_move1.h"
 #include "images/fighter_move2.h"
 #include "images/fighter_move3.h"

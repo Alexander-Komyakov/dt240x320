@@ -9,7 +9,7 @@
 
 #define BUTTON_PIN ADC1_CHANNEL_0
 
-#define ENABLE_ANALOG_CONTROL 1
+//#define ENABLE_ANALOG_CONTROL 1
 
 
 // Задержка для устранения дребезга клавишь (в миллисекундах)
@@ -20,13 +20,15 @@
 #endif
 
 // Назначение клавиш
-#define BUTTON_LEFT    GPIO_NUM_19
+//#define BUTTON_LEFT    GPIO_NUM_19
+#define BUTTON_LEFT    GPIO_NUM_21
 #define BUTTON_RIGHT   GPIO_NUM_14
 #define BUTTON_UP      GPIO_NUM_13
 #define BUTTON_DOWN    GPIO_NUM_25
 #define BUTTON_RED     GPIO_NUM_17
 #define BUTTON_WHITE   GPIO_NUM_22
-#define BUTTON_YELLOW  GPIO_NUM_21
+//#define BUTTON_YELLOW  GPIO_NUM_21
+#define BUTTON_YELLOW  GPIO_NUM_19
 #define BUTTON_BLUE    GPIO_NUM_16
 #define BUTTON_CENTER  GPIO_NUM_32
 
