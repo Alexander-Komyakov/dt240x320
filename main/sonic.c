@@ -125,9 +125,13 @@ void task_animation(void *pvParameters) {
     // Позиция и движение
     uint16_t fighter_x = FIGHTER_X;
     uint16_t fighter_y = FIGHTER_Y;
-    const uint8_t move_speed = 8;
-    const int scroll_speed = 8;
-    const int scroll_threshold = 50; // Расстояние от края экрана для начала скроллинга
+    const uint8_t move_speed = 6; // было 8
+    const int base_scroll_speed = 6; // было 8
+    
+    // Границы для скроллинга (1/5 слева и 4/5 справа)
+    const int left_scroll_boundary = DISPLAY_WIDTH * 1 / 5;       // 1/5 экрана
+    const int right_scroll_boundary = DISPLAY_WIDTH * 4 / 5;  // 4/5 экрана
+    const int target_margin = DISPLAY_WIDTH / 20;              // 1/20 от края как целевой отступ
 
     // Инициализация буфера
     init_composite_buffer(DISPLAY_WIDTH, DISPLAY_HEIGHT);
@@ -160,6 +164,9 @@ void task_animation(void *pvParameters) {
         else if (left_pressed || right_pressed) {
             current_state = STATE_MOVING;
             
+            int character_width = fighter_move_frames[0]->width;
+            int max_x = DISPLAY_WIDTH - character_width;
+            
             if (left_pressed) {
                 // Движение влево
                 if (fighter_x > move_speed) {
@@ -168,24 +175,42 @@ void task_animation(void *pvParameters) {
                     fighter_x = 0;
                 }
                 
-                // Скроллим фон влево, если персонаж у левого края
-                if (fighter_x <= scroll_threshold) {
-                    global_scroll_offset -= scroll_speed; // МИНУС - фон движется влево
+                // Скроллим экран влево, если персонаж в левой зоне скроллинга
+                if (fighter_x <= left_scroll_boundary) {
+                    // Рассчитываем скорость скроллинга пропорционально отклонению от целевой позиции
+                    int target_x = target_margin;
+                    if (fighter_x < target_x) {
+                        float scroll_ratio = (float)(target_x - fighter_x) / target_x;
+                        int scroll_speed_calculated = (int)(base_scroll_speed * (1.0f + scroll_ratio));
+                        global_scroll_offset -= scroll_speed_calculated;
+                    }
                 }
             }
             else if (right_pressed) {
                 // Движение вправо
-                int max_x = DISPLAY_WIDTH - fighter_move_frames[0]->width;
                 if (fighter_x < max_x - move_speed) {
                     fighter_x += move_speed;
                 } else if (fighter_x < max_x) {
                     fighter_x = max_x;
                 }
                 
-                // Скроллим фон вправо, если персонаж у правого края
-                if (fighter_x >= max_x - scroll_threshold) {
-                    global_scroll_offset += scroll_speed; // ПЛЮС - фон движется вправо
+                // Скроллим экран вправо, если персонаж в правой зоне скроллинга
+                if (fighter_x >= right_scroll_boundary - character_width) {
+                    // Рассчитываем скорость скроллинга пропорционально отклонению от целевой позиции
+                    int target_x = max_x - target_margin;
+                    if (fighter_x > target_x) {
+                        float scroll_ratio = (float)(fighter_x - target_x) / (max_x - target_x);
+                        int scroll_speed_calculated = (int)(base_scroll_speed * (1.0f + scroll_ratio));
+                        global_scroll_offset += scroll_speed_calculated;
+                    }
                 }
+            }
+            
+            // Корректируем позицию персонажа, чтобы он не выходил за целевые границы
+            if (fighter_x < target_margin) {
+                fighter_x = target_margin;
+            } else if (fighter_x > max_x - target_margin) {
+                fighter_x = max_x - target_margin;
             }
             
             // Циклический скролл фона
