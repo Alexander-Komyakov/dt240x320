@@ -39,9 +39,9 @@ void draw_character(const Image *character) {
     }
 }
 
-// Получение пикселя из объединенной сцены (оба фона как один уровень)
+// Получение пикселя из объединенной сцены (три фона как один уровень)
 static uint16_t get_scene_pixel(int x, int y) {
-    int total_width = image_background.width + image_background2.width;
+    int total_width = image_background.width + image_background2.width + image_background3.width;
     
     // Обеспечиваем циклический скролл
     x = x % total_width;
@@ -50,10 +50,14 @@ static uint16_t get_scene_pixel(int x, int y) {
     if (x < image_background.width) {
         // Первый фон
         return image_background.pixels[y * image_background.width + x];
-    } else {
+    } else if (x < image_background.width + image_background2.width) {
         // Второй фон
         int bg2_x = x - image_background.width;
         return image_background2.pixels[y * image_background2.width + bg2_x];
+    } else {
+        // Третий фон
+        int bg3_x = x - image_background.width - image_background2.width;
+        return image_background3.pixels[y * image_background3.width + bg3_x];
     }
 }
 
@@ -185,7 +189,7 @@ void task_animation(void *pvParameters) {
             }
             
             // Циклический скролл фона
-            int total_width = image_background.width + image_background2.width;
+            int total_width = image_background.width + image_background2.width + image_background3.width;
             if (global_scroll_offset >= total_width) {
                 global_scroll_offset -= total_width;
             } else if (global_scroll_offset < 0) {
