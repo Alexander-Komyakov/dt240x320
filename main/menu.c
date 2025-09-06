@@ -1,34 +1,45 @@
 #include "menu.h"
 
-
 uint8_t menu(spi_device_handle_t spi) {
     fill_screen_gradient(spi, 0xBBBB, 0xFFFF);
 
     uint8_t current_game = load_nvs_u8("menu");
 
-    draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
-    draw_image(spi, &image_pong_preview);
-
-    image_pong_preview.x = 127;
-    draw_image(spi, &image_doodle_preview);
-    draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
-
-    image_pong_preview.x = 224;
-    draw_image(spi, &image_arkanoid_preview);
-    draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
-
-    image_pong_preview.y = 140;
-    draw_image(spi, &image_dacha_preview);
-    draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
-
-    image_pong_preview.x = 127;
-    draw_image(spi, &image_flappy_preview);
-    draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
-
+    // Верхний ряд
     image_pong_preview.x = 30;
+    image_pong_preview.y = 40;
     draw_image(spi, &image_pong_preview);
     draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
 
+    image_doodle_preview.x = 127;
+    image_doodle_preview.y = 40;
+    draw_image(spi, &image_doodle_preview);
+    draw_border(spi, &image_doodle_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
+
+    image_arkanoid_preview.x = 224;
+    image_arkanoid_preview.y = 40;
+    draw_image(spi, &image_arkanoid_preview);
+    draw_border(spi, &image_arkanoid_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
+
+    // Нижний ряд
+
+    image_sonic_preview.x = 30;
+    image_sonic_preview.y = 140;
+    draw_image(spi, &image_sonic_preview);
+    draw_border(spi, &image_sonic_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
+
+    image_flappy_preview.x = 127;
+    image_flappy_preview.y = 140;
+    draw_image(spi, &image_flappy_preview);
+    draw_border(spi, &image_flappy_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
+
+    image_dacha_preview.x = 224;
+    image_dacha_preview.y = 140;
+    draw_image(spi, &image_dacha_preview);
+    draw_border(spi, &image_dacha_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
+
+
+    // Устанавливаем позицию для выделения текущей игры
     if (current_game == 0) {
         image_pong_preview.x = 30;
         image_pong_preview.y = 40;
@@ -49,10 +60,9 @@ uint8_t menu(spi_device_handle_t spi) {
         image_pong_preview.y = 140;
     }
     draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_GAME_COLOR);
+    
     xStreamBuffer = xStreamBufferCreate(STREAM_BUF_SIZE, sizeof(int));
-
     int received_button = 0;
-
     uint32_t last_button_time = 0;
     int last_button = 99;
     uint32_t current_time;
@@ -65,34 +75,53 @@ uint8_t menu(spi_device_handle_t spi) {
             if (received_button != last_button || (current_time - last_button_time) > DEBOUNCE_TIME_MS) {
                 last_button_time = current_time;
                 last_button = received_button;
+                
+                // Стираем старое выделение
+                draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
+                
                 if (received_button == BUTTON_UP) {
                     if (current_game >= 3) {
                         current_game -= 3;
-                        draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
-                        image_pong_preview.y = 40;
                     }
                 } else if (received_button == BUTTON_DOWN) {
                     if (current_game <= 2) {
                         current_game += 3;
-                        draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
-                        image_pong_preview.y = 140;
                     }
                 } else if (received_button == BUTTON_RIGHT) {
                     if (current_game != 2 && current_game != 5) {
                         current_game += 1;
-                        draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
-                        image_pong_preview.x += 97;
                     }
                 } else if (received_button == BUTTON_LEFT) {
                     if (current_game != 0 && current_game != 3) {
                         current_game -= 1;
-                        draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_BACKGROUND_COLOR);
-                        image_pong_preview.x -= 97;
                     }
                 } else {
                     save_nvs_u8("menu", current_game);
                     return current_game;
                 }
+                
+                // Обновляем позицию для выделения
+                if (current_game == 0) {
+                    image_pong_preview.x = 30;
+                    image_pong_preview.y = 40;
+                } else if (current_game == 1) {
+                    image_pong_preview.x = 127;
+                    image_pong_preview.y = 40;
+                } else if (current_game == 2) {
+                    image_pong_preview.x = 224;
+                    image_pong_preview.y = 40;
+                } else if (current_game == 3) {
+                    image_pong_preview.x = 30;
+                    image_pong_preview.y = 140;
+                } else if (current_game == 4) {
+                    image_pong_preview.x = 127;
+                    image_pong_preview.y = 140;
+                } else if (current_game == 5) {
+                    image_pong_preview.x = 224;
+                    image_pong_preview.y = 140;
+                }
+                
+                // Рисуем новое выделение
                 draw_border(spi, &image_pong_preview, MENU_BORDER, MENU_GAME_COLOR);
             }
         }

@@ -21,6 +21,7 @@
 #include "images/sonic4.h"
 #include "images/sonic5.h"
 #include "images/sonic6.h"
+#include "images/sonic_preview.h"
 #include "images/fighter_shot1.h"
 #include "images/fighter_shot2.h"
 #include "images/pikachu1.h"
